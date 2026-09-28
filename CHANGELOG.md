@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.24.0] - 2026-09-28
+
+### Added
+- 新增根目录 `Rakefile`，提供统一本地验证入口 `rake test`：内部执行 `ruby scripts/verify_rules.rb --no-report`，报告只打印到 stdout、不生成 `tmp/rule-verification.*`；无参数运行 `rake` 时默认也是这个任务，校验失败时以非零退出码结束。
+  - 起因是校验脚本的参数（尤其是 `--no-report`）此前只零散写在 README 的表格说明里，本地跑验证只能靠记忆手动敲命令；固定成 `rake test` 后人和 CI 用同一条命令，默认即无副作用。
+
+### Changed
+- README「工具脚本」表新增 `Rakefile` 条目，并补一节「本地验证」说明 `rake test` 的用法、`--no-report` 的无副作用行为和失败退出码。
+- 规则库版本提升到 0.24.0。
+
 ## [0.23.0] - 2026-09-28
 
 ### Added

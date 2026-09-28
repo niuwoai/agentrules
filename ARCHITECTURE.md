@@ -1,6 +1,6 @@
 # Architecture
 
-> 最后更新：2026-09-28 | 当前版本：v0.23.0
+> 最后更新：2026-09-28 | 当前版本：v0.24.0
 
 ## 架构概览
 
@@ -31,6 +31,7 @@ Alma 规则库（Markdown 主题规范）
 | `scripts/generate_project_agents.rb` | 扫描项目构建清单，选择通用/React/Go/Go + React 模板，创建缺失的根目录与模块级 `AGENTS.md`；禁止覆盖已有文件 | Ruby 标准库、单文件规则生成器、ERB 模板 |
 | `templates/agents/` | 定义可人工维护的根目录与模块级 `AGENTS.md` 初始结构，包括 Scope、Parent、命令和局部规则 | ERB；由项目脚手架读取 |
 | `scripts/verify_rules.rb` | 校验硬约束、必选规则、版本、入口文档体量预算、硬约束/索引生成产物和嵌套 AGENTS 上溯链，并用临时多模块项目验证脚手架首次生成与重复执行安全性，输出 JSON/Markdown 报告 | Ruby 标准库、两个生成器 |
+| `Rakefile` | 提供本地验证入口：`rake test`（也是默认任务）调用 `scripts/verify_rules.rb` 并传入 `--no-report`，报告只到 stdout、不落盘 | Rake（系统 Ruby 环境）、Ruby 校验脚本 |
 | `.github/workflows/verify-rules.yml` | 在 PR 与分支推送时验证规则库 | GitHub Actions、Ruby 校验脚本 |
 | `.github/workflows/release-claude.yml` | 校验 tag 版本与主分支归属后，生成硬约束版 `CLAUDE.md` 和索引版 `AGENTS.md` 并发布 GitHub Release 附件 | GitHub Actions、Ruby 脚本、GitHub CLI |
 
@@ -44,6 +45,7 @@ Alma 规则库（Markdown 主题规范）
 ## 部署与运行
 
 - 规则文档可直接在本地仓库、Git 托管平台或目标项目中阅读。
+- 本地验证统一入口是 `rake test`：它调用 `ruby scripts/verify_rules.rb --no-report`，报告只打印到 stdout、不在工作区生成 `tmp/rule-verification.*`；校验失败时 rake 以非零退出码结束。CI 仍直接调用校验脚本并保留报告产物。
 - 使用生成脚本时需 Ruby 运行环境；安装 `tty-prompt` 可获得更好的交互体验，缺失时脚本应降级为基础终端选择。
 - 发布方式为 Git 提交、版本号和 Git tag。CI 先校验规则结构、生成产物和版本一致性；只有指向默认分支、且与文档版本一致的 `v*` tag 才会生成硬约束版 `CLAUDE.md` 与索引版 `AGENTS.md`，并作为 GitHub Release 附件。变更前后需同步维护 CHANGELOG、Product Overview 与本文件。
 

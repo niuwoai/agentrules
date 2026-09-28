@@ -38,8 +38,17 @@
 | [scripts/generate_project_agents.rb](scripts/generate_project_agents.rb) | 扫描目标项目并生成分层 `AGENTS.md`：支持通用、React、Go API、Go + React 模板；已有文件一律跳过，不覆盖人工规则 |
 | [templates/agents/](templates/agents/) | 根目录与模块级 `AGENTS.md` 的可维护 ERB 模板 |
 | [scripts/verify_rules.rb](scripts/verify_rules.rb) | 校验规则结构、必选规则、版本一致性、入口文档体量预算、生成产物和嵌套 AGENTS 上溯链，并集成测试项目脚手架的重复执行安全性；输出 JSON + Markdown 报告，加 `--no-report` 则只打印到 stdout 不落盘 |
+| [Rakefile](Rakefile) | 本地验证入口：`rake test`（也是默认任务）执行 `ruby scripts/verify_rules.rb --no-report`，报告只打印到 stdout，不生成 `tmp/` 报告、不改动工作区；校验失败时 rake 以非零退出码结束 |
 | [.github/workflows/verify-rules.yml](.github/workflows/verify-rules.yml) | 在 PR 与分支推送时执行规则校验，并上传报告 |
 | [.github/workflows/release-claude.yml](.github/workflows/release-claude.yml) | 仅对主分支上的版本 tag 自动生成硬约束版 `CLAUDE.md` 与索引版 `AGENTS.md`，并作为 GitHub Release 附件发布 |
+
+## 本地验证
+
+```bash
+rake test
+```
+
+`rake test` 就是 `ruby scripts/verify_rules.rb --no-report`：报告打到 stdout、不落盘，跑完工作区保持不变；不带参数的 `rake` 默认也是这个任务。失败时命令以非零退出码结束。系统 Ruby + Rake 即可，不需要 bundler。
 
 ## 生成全局精简索引
 
