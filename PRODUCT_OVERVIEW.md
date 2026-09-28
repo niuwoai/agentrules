@@ -1,6 +1,6 @@
 # Product Overview
 
-> 最后更新：2026-09-24 | 当前版本：v0.22.0
+> 最后更新：2026-09-28 | 当前版本：v0.23.0
 
 ## 项目简介
 Alma 规则库沉淀日常软件开发、部署、数据库、前端、设计和项目协作规范，供 AI 助手和开发者在新项目、迭代、排障、交付时统一参考。
@@ -17,6 +17,7 @@ Alma 规则库沉淀日常软件开发、部署、数据库、前端、设计和
 - 版本控制规范：分支、语义化版本、macOS/iOS Build 号、CHANGELOG、Product Overview、Architecture 文档、`.gitignore`、提交流程，并提供两类文档的职责、更新时机与可复制模板
 - Linux 服务器规范：安全基线、监控、备份、日志、性能和应急响应
 - 工具与发布：单文件生成器支持完整正文、`--compact` 硬约束版和 `--index` 按需索引版；Ruby 脚本也能扫描目标项目并生成根目录 + 模块级的分层 `AGENTS.md`；校验脚本输出 JSON 和 Markdown 报告，CI 检查规则结构、版本一致性、两类生成产物同步和脚手架重复执行安全性；通过主分支门禁的版本 tag 会发布 `CLAUDE.md` 与 `AGENTS.md`
+- 上下文预算与长文档索引化：入口文档（`AGENTS.md` / `CLAUDE.md` / `README.md` / `PRODUCT_OVERVIEW.md` / `ARCHITECTURE.md`）超过 300 行或 20,000 字符必须索引化，细节下沉 `docs/` 子文档并保留入口表；`CHANGELOG.md` 只保留最近版本，历史归档到 `docs/changelog/`
 
 ## 使用方式
 - 新项目启动时先判断项目阶段；若缺少产品定义、设计系统、架构或协作规则文档，先按 `design.md` 生成/更新 `AGENTS.md`、`CLAUDE.md`、`PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md` 或等价文档。
@@ -30,12 +31,14 @@ Alma 规则库沉淀日常软件开发、部署、数据库、前端、设计和
 - 每次规则变更后，更新 `CHANGELOG.md`；功能性规则变化同步更新本文件。
 - 需要生成 AI 协作规则入口时，运行 `ruby scripts/generate_claude_md.rb --list` 查看项目画像；项目级规则用 `--compact` 输出硬约束版，全局 `AGENTS.md` 用 `--index` 输出按需索引版，完整规则留在规则库按任务读取。
 - 需要为真实项目初始化分层规则时，先运行 `ruby scripts/generate_project_agents.rb --target /path/to/project --dry-run` 审核计划，再去掉 `--dry-run` 创建缺失文件；自动识别不符合项目实际时用 `--template` 明确指定。
+- 概览与变更类文档按需读取，不作为每轮自动加载的规则；超长时按入口表读取子文档。
 
 ## 维护规则
 - 单个文件超过 2000 行时应考虑拆分，超过 3000 行必须拆分。
 - 新增规范优先独立成章或新文件，再从 `README.md` 和相关主题文件挂入口。
 - 规则应写成可执行的约束，避免只有口号没有验收标准。
 - 安全、版本、迁移、部署等高风险规则必须明确风险和处理方式。
+- 入口文档遵守 `ai-guardrails.md` 的体量预算（≤ 300 行 且 ≤ 20,000 字符），超限先把细节搬进子文档，再谈拆文件。
 
 ## 已知问题 / 待办
 - [ ] 增加自动化校验脚本，检查 README 链接、文件行数和关键规则是否缺失。

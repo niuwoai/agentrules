@@ -16,6 +16,9 @@ GENERATOR = File.join(ROOT, "scripts", "generate_claude_md.rb")
 PROJECT_AGENT_GENERATOR = File.join(ROOT, "scripts", "generate_project_agents.rb")
 GENERATED_ARTIFACT = File.join(ROOT, "GENERATED_CLAUDE.md")
 GENERATED_INDEX_ARTIFACT = File.join(ROOT, "GENERATED_AGENTS.md")
+AUTO_LOAD_DOCS = %w[README.md PRODUCT_OVERVIEW.md ARCHITECTURE.md CHANGELOG.md].freeze
+AUTO_LOAD_BUDGET_LINES = 300
+AUTO_LOAD_BUDGET_CHARS = 20_000
 VERSION_FILES = {
   "PRODUCT_OVERVIEW.md" => File.join(ROOT, "PRODUCT_OVERVIEW.md"),
   "ARCHITECTURE.md" => File.join(ROOT, "ARCHITECTURE.md")
@@ -34,6 +37,7 @@ class RuleVerifier
     verify_required_docs(catalog)
     verify_generated_artifact
     verify_generated_index_artifact
+    verify_doc_budget
     verify_project_agent_generator
     verify_versions
     verify_nested_agents
@@ -88,6 +92,35 @@ class RuleVerifier
       detail = passed ? "GENERATED_AGENTS.md 与索引生成器一致，只包含按需链接，不内嵌主题正文。" : "请重新生成 GENERATED_AGENTS.md，并检查来源链接和正文未内嵌约束。"
       record("索引产物同步", passed, detail)
     end
+  end
+
+  def verify_doc_budget
+    over_budget = []
+    line_counts = {}
+    AUTO_LOAD_DOCS.each do |file|
+      content = File.read(File.join(ROOT, file), encoding: "UTF-8")
+      lines = content.lines.size
+      line_counts[file] = lines
+      if lines > AUTO_LOAD_BUDGET_LINES || content.length > AUTO_LOAD_BUDGET_CHARS
+        over_budget << "#{file} #{lines} 行 / #{content.length} 字符"
+      end
+    end
+
+    threshold = "≤ #{AUTO_LOAD_BUDGET_LINES} 行 且 ≤ 20,000 字符"
+    guardrails = File.read(File.join(ROOT, "ai-guardrails.md"), encoding: "UTF-8")
+    threshold_ok = guardrails.include?(threshold)
+
+    passed = over_budget.empty? && threshold_ok
+    detail = if !threshold_ok
+      "ai-guardrails.md 缺少阈值文本「#{threshold}」，需同步 ai-guardrails.md 与本脚本常量。"
+    elsif over_budget.empty?
+      sizes = AUTO_LOAD_DOCS.map { |file| "#{file} #{line_counts.fetch(file)} 行" }.join("、")
+      "入口文档均在预算内：#{sizes}（上限 #{AUTO_LOAD_BUDGET_LINES} 行 / 20,000 字符）。"
+    else
+      "入口文档超出预算：#{over_budget.join('、')}（上限 #{AUTO_LOAD_BUDGET_LINES} 行 / 20,000 字符），请先索引化或归档到 docs/ 子文档。"
+    end
+
+    record("入口文档体量预算", passed, detail)
   end
 
   def verify_project_agent_generator
@@ -197,7 +230,8 @@ def parse_options(argv)
   options = {
     expected_version: nil,
     json_output: "tmp/rule-verification.json",
-    markdown_output: "tmp/rule-verification.md"
+    markdown_output: "tmp/rule-verification.md",
+    write_report: true
   }
 
   OptionParser.new do |opts|
@@ -205,6 +239,7 @@ def parse_options(argv)
     opts.on("--expected-version VERSION", "要求 Product Overview、Architecture 和 Changelog 使用该版本") { |value| options[:expected_version] = value }
     opts.on("--json-output PATH", "JSON 报告路径") { |value| options[:json_output] = value }
     opts.on("--markdown-output PATH", "Markdown 报告路径") { |value| options[:markdown_output] = value }
+    opts.on("--no-report", "报告改写到 stdout，不落盘，工作区保持无副作用") { options[:write_report] = false }
   end.parse!(argv)
   options
 end
@@ -231,7 +266,11 @@ end
 
 options = parse_options(ARGV)
 result = RuleVerifier.new(expected_version: options.fetch(:expected_version)).run
-write_report(report_path(options.fetch(:json_output)), "#{JSON.pretty_generate(result)}\n")
-write_report(report_path(options.fetch(:markdown_output)), markdown_report(result))
+if options.fetch(:write_report)
+  write_report(report_path(options.fetch(:json_output)), "#{JSON.pretty_generate(result)}\n")
+  write_report(report_path(options.fetch(:markdown_output)), markdown_report(result))
+else
+  puts markdown_report(result)
+end
 puts "规则校验：#{result.fetch(:passed) ? '通过' : '失败'}"
 exit(result.fetch(:passed) ? 0 : 1)

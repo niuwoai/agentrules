@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.23.0] - 2026-09-28
+
+### Added
+- `ai-guardrails.md` 新增「长文档索引化与上下文预算」：定义入口文档体量预算（≤ 300 行 且 ≤ 20,000 字符）、索引式结构要素、子文档目录约定与变更记录分卷归档；硬约束同时明确概览与变更类文档是参考文档，不随会话自动全量加载。
+- `scripts/verify_rules.rb` 新增「入口文档体量预算」检查：`README.md`、`PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md`、`CHANGELOG.md` 超过 300 行或 20,000 字符即失败，并校验 `ai-guardrails.md` 的阈值文本与脚本常量一致。
+- `scripts/verify_rules.rb` 新增 `--no-report`：报告改写到 stdout，不再生成 `tmp/rule-verification.*`，让本地验证不再改动工作区（默认行为不变，CI 仍产出报告）。
+- `version-control.md` 为 `CHANGELOG.md`、`PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md` 补充体量预算、索引式结构与归档规则；`design.md` 要求生成启动文档时按同一预算控制体量。
+
+### Changed
+- 起因是一个工作区的 `product-overview.md` 长到 2,057 行 / 383,572 字符，被当作“完整项目指令”整篇预加载，会话还没开工就接近上下文上限。
+- 规则库版本提升到 0.23.0。
+
 ## [0.22.0] - 2026-09-24
 
 ### Changed

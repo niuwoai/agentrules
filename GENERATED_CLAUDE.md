@@ -60,6 +60,9 @@
 - **MUST NOT**：把用户写给 AI/开发者的需求说明、验收标准、Prompt、规则、实现备注、调试信息或运维/发布元数据，未经判断就当作最终用户可见文案。需求默认只定义产品行为，不等于界面文案；仅当用户明确指定其为展示文案，或该信息确实是最终用户完成当前任务所必需时，才可展示，并须改写为符合最终用户角色、目标与操作场景的产品语言
 - **MUST**：根目录 `AGENTS.md` 只放全局约束；嵌套 `AGENTS.md` 必须声明 Scope 和 Parent，并只补充该目录的例外规则
 - **MUST NOT**：直接修改带 `GENERATED FILE — DO NOT EDIT` 标记的文件；必须修改源规则/模板后重新生成
+- **MUST**：会被会话自动整篇加载的入口文档（`AGENTS.md`、`CLAUDE.md`、`README.md`、`PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md` 及同类概览文档）必须控制在体量预算内（≤ 300 行 且 ≤ 20,000 字符，约 10k tokens）；超限必须索引化——主文档只留摘要与子文档入口，细节下沉到 `docs/` 子文档，见「长文档索引化与上下文预算」一节
+- **MUST**：`PRODUCT_OVERVIEW.md`、`CHANGELOG.md`、`README.md` 这类概览与变更记录是参考文档，不是每轮必读的规则；自动加载只针对真正的规则文件（`AGENTS.md` / `CLAUDE.md` / 主题规则），参考文档在任务命中时才按需读取
+- **MUST NOT**：让入口文档随项目无限增长——超限仍不拆分，或把逐条接口字段、完整功能流水、历史版本明细、实现日志堆在概览文档里
 
 ---
 
@@ -93,6 +96,7 @@
 
 - **MUST**：界面项目开工前先判断项目阶段（新项目 / 半成品 / 迭代）并说明依据；判断不清（不确定性 ≥ 30%）按新项目处理，先确认再动手
 - **MUST**：新项目先生成/更新 `AGENTS.md`、`CLAUDE.md`、`PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md` 或等价启动文档，再进入大规模实现
+- **MUST**：生成/更新启动文档（`AGENTS.md`、`CLAUDE.md`、`README.md`、`PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md`）时按 `ai-guardrails.md` 的「长文档索引化与上下文预算」控制体量：入口文档超限就把细节写进 `docs/` 子文档，并保留带一行摘要的入口表
 - **MUST**：新项目第一轮沟通合并为 6-8 个高价值问题；能从仓库/截图判断的内容写成默认假设让用户确认
 - **MUST**：架构、数据库、部署、权限、测试等工程决策先给推荐方案和理由，再让用户确认；不把选型责任全丢给用户
 - **MUST**：用户要求直接开工时，显式列出采用的默认设计假设并写入启动文档，标注"待确认"
@@ -271,3 +275,5 @@
 - **MUST NOT**：直接在 main/develop 上 commit；一律走 feature 分支 + PR
 - **MUST NOT**：一个 PR 混 feat + fix + refactor
 - **MUST NOT**：改了版本号不写 CHANGELOG，或 CHANGELOG 与代码不同步
+- **MUST**：`PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md`、`CHANGELOG.md` 按体量预算维护：入口文档超限必须索引化（细节下沉子文档并保留入口表），`CHANGELOG.md` 只保留最近版本、历史归档到 `docs/changelog/`（预算见 `ai-guardrails.md` 的「长文档索引化与上下文预算」）
+- **MUST**：`当前版本：vX.Y.Z` 必须留在 `PRODUCT_OVERVIEW.md` / `ARCHITECTURE.md` 主文档顶部，CI 与校验脚本依赖它，不得随细节下沉到子文档

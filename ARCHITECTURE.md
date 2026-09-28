@@ -1,6 +1,6 @@
 # Architecture
 
-> 最后更新：2026-09-24 | 当前版本：v0.22.0
+> 最后更新：2026-09-28 | 当前版本：v0.23.0
 
 ## 架构概览
 
@@ -30,7 +30,7 @@ Alma 规则库（Markdown 主题规范）
 | `scripts/generate_claude_md.rb` | 交互选择规则主题并生成 AI 协作规则文档；`--compact` 提取「硬约束」，`--index` 只生成按需读取链接 | Ruby 标准库；可选 `tty-prompt` |
 | `scripts/generate_project_agents.rb` | 扫描项目构建清单，选择通用/React/Go/Go + React 模板，创建缺失的根目录与模块级 `AGENTS.md`；禁止覆盖已有文件 | Ruby 标准库、单文件规则生成器、ERB 模板 |
 | `templates/agents/` | 定义可人工维护的根目录与模块级 `AGENTS.md` 初始结构，包括 Scope、Parent、命令和局部规则 | ERB；由项目脚手架读取 |
-| `scripts/verify_rules.rb` | 校验硬约束、必选规则、版本、硬约束/索引生成产物和嵌套 AGENTS 上溯链，并用临时多模块项目验证脚手架首次生成与重复执行安全性，输出 JSON/Markdown 报告 | Ruby 标准库、两个生成器 |
+| `scripts/verify_rules.rb` | 校验硬约束、必选规则、版本、入口文档体量预算、硬约束/索引生成产物和嵌套 AGENTS 上溯链，并用临时多模块项目验证脚手架首次生成与重复执行安全性，输出 JSON/Markdown 报告 | Ruby 标准库、两个生成器 |
 | `.github/workflows/verify-rules.yml` | 在 PR 与分支推送时验证规则库 | GitHub Actions、Ruby 校验脚本 |
 | `.github/workflows/release-claude.yml` | 校验 tag 版本与主分支归属后，生成硬约束版 `CLAUDE.md` 和索引版 `AGENTS.md` 并发布 GitHub Release 附件 | GitHub Actions、Ruby 脚本、GitHub CLI |
 
@@ -55,3 +55,4 @@ Alma 规则库（Markdown 主题规范）
 - 项目脚手架产物是可人工维护的初始化文件，不是持续覆盖的生成产物；重复运行必须跳过已有文件。
 - `ARCHITECTURE.md` 固定放在项目根目录，作为架构事实来源；模块级细节可在子目录 README 或 ADR 中补充。
 - 新项目和架构变更必须更新架构文档，防止关键技术决策只停留在聊天记录或个人记忆中。
+- 入口文档（README、Product Overview、Architecture）受体量预算约束，超限按索引式组织把细节移到 `docs/` 子文档；概览与变更记录只按需读取，避免会话启动即被整篇文档占满上下文。

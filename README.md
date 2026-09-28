@@ -7,7 +7,7 @@
 ## 通用
 | 文件 | 内容 |
 |------|------|
-| [ai-guardrails.md](ai-guardrails.md) | AI 协作红线：文件编辑方式、破坏性操作确认、共享分支保护、如实汇报、需求文本与产品文案边界 |
+| [ai-guardrails.md](ai-guardrails.md) | AI 协作红线：文件编辑方式、破坏性操作确认、共享分支保护、如实汇报、需求文本与产品文案边界、长文档索引化与上下文预算 |
 | [programming.md](programming.md) | 编程：代码风格、错误处理、测试、设计原则、安全、日志 |
 | [design.md](design.md) | 多端设计：新项目启动门禁、第一轮确认清单、启动文档模板、UI 体系、多端规范 |
 | [version-control.md](version-control.md) | 版本管理：分支策略、语义化版本、CHANGELOG、Product Overview、Architecture 文档、Git 工作流 |
@@ -37,7 +37,7 @@
 | [scripts/generate_claude_md.rb](scripts/generate_claude_md.rb) | 交互选择规则文档并生成 AI 协作规则；`--compact` 输出硬约束精简版，`--index` 输出不含主题正文的按需索引版 |
 | [scripts/generate_project_agents.rb](scripts/generate_project_agents.rb) | 扫描目标项目并生成分层 `AGENTS.md`：支持通用、React、Go API、Go + React 模板；已有文件一律跳过，不覆盖人工规则 |
 | [templates/agents/](templates/agents/) | 根目录与模块级 `AGENTS.md` 的可维护 ERB 模板 |
-| [scripts/verify_rules.rb](scripts/verify_rules.rb) | 校验规则结构、必选规则、版本一致性、生成产物和嵌套 AGENTS 上溯链，并集成测试项目脚手架的重复执行安全性；输出 JSON + Markdown 报告 |
+| [scripts/verify_rules.rb](scripts/verify_rules.rb) | 校验规则结构、必选规则、版本一致性、入口文档体量预算、生成产物和嵌套 AGENTS 上溯链，并集成测试项目脚手架的重复执行安全性；输出 JSON + Markdown 报告，加 `--no-report` 则只打印到 stdout 不落盘 |
 | [.github/workflows/verify-rules.yml](.github/workflows/verify-rules.yml) | 在 PR 与分支推送时执行规则校验，并上传报告 |
 | [.github/workflows/release-claude.yml](.github/workflows/release-claude.yml) | 仅对主分支上的版本 tag 自动生成硬约束版 `CLAUDE.md` 与索引版 `AGENTS.md`，并作为 GitHub Release 附件发布 |
 
