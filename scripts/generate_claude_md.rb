@@ -23,7 +23,7 @@ DOCS = [
     key: "ai-guardrails",
     file: "ai-guardrails.md",
     title: "AI 协作红线",
-    summary: "文件编辑方式、破坏性操作确认、共享分支保护和如实汇报",
+    summary: "文件编辑方式、破坏性操作确认、需求文本与产品文案边界、界面要求与实现行为分离、共享分支保护和如实汇报",
     tags: %w[common ai required]
   ),
   RuleDoc.new(
@@ -37,7 +37,7 @@ DOCS = [
     key: "design",
     file: "design.md",
     title: "多端产品设计规范",
-    summary: "新项目启动门禁、UI 规范方向、docs 文档沉淀和多端规范",
+    summary: "新项目启动门禁、界面呈现与实现行为分离、UI 规范方向和多端规范",
     tags: %w[design h5 desktop-web mac-app android-app frontend app]
   ),
   RuleDoc.new(
