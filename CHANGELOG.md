@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.26.0] - 2026-09-30
+
+### Changed
+- `version-control.md` 将版本号机制从 `-rcN` 预发布标识改为独立 Build 号：
+  - 版本号 `MAJOR.MINOR.PATCH` 仅体现功能变化（bugfix 不提升版本位）
+  - Build 号是单调递增整数，每次发布 +1，永不重置，用于标识第几次构建/发布
+  - 新增 Build 号在各技术栈的记录方式说明
+  - macOS/iOS 的 `CFBundleVersion` 与本规范 Build 号概念统一
+- 规则库版本提升到 0.26.0。
+
+### Verification
+- `rake test`：PASS
+
 ## [0.25.0] - 2026-09-29
 
 ### Added

@@ -266,8 +266,9 @@
 ## 硬约束
 
 - **MUST**：每次修改代码后同步更新版本号和 `CHANGELOG.md`
-- **MUST**：版本号采用语义化格式，允许 rc 预发布标识（如 `1.2.3-rc2`）
-- **MUST**：功能新增才提升正式版本位（MINOR/MAJOR），并把 rc 重置为 `rc1`；bugfix 只递增 rc 号（`-rc2` → `-rc3`），不得提升正式版本位（对外发布、须遵循标准 SemVer 的库/包除外，详见 `version-control.md` 语义化版本号一节）
+- **MUST**：版本号采用语义化格式 `MAJOR.MINOR.PATCH`（如 `1.2.3`），Build 号独立维护
+- **MUST**：Build 号是一个单调递增整数，每次发布 +1，永不重置；用于标识第几次构建/发布，不体现功能变化
+- **MUST**：功能新增才提升正式版本位（MINOR/MAJOR）；bugfix 只递增 Build 号，不得提升正式版本位（对外发布、须遵循标准 SemVer 的库/包除外，详见 `version-control.md` 语义化版本号一节）
 - **MUST**：前端与后端版本号保持一致；服务端 API 通过响应 header（如 `X-App-Version`）暴露当前版本
 - **MUST**：用户要求 git 提交时，打 `v{版本号}` tag 并随代码一起推送（远程是 GitHub 时推到 GitHub）
 - **MUST**：发布 tag 只能指向已合入默认分支的提交；tag、`PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md` 和 CHANGELOG 的版本必须一致，并由 CI 校验
