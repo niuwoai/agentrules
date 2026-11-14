@@ -19,6 +19,8 @@ GENERATED_INDEX_ARTIFACT = File.join(ROOT, "GENERATED_AGENTS.md")
 AUTO_LOAD_DOCS = %w[README.md PRODUCT_OVERVIEW.md ARCHITECTURE.md CHANGELOG.md].freeze
 AUTO_LOAD_BUDGET_LINES = 300
 AUTO_LOAD_BUDGET_CHARS = 20_000
+OVERVIEW_ARCHITECTURE_DOCS = %w[PRODUCT_OVERVIEW.md ARCHITECTURE.md].freeze
+OVERVIEW_ARCHITECTURE_BUDGET_CHARS = 1_000
 VERSION_FILES = {
   "PRODUCT_OVERVIEW.md" => File.join(ROOT, "PRODUCT_OVERVIEW.md"),
   "ARCHITECTURE.md" => File.join(ROOT, "ARCHITECTURE.md")
@@ -94,34 +96,48 @@ class RuleVerifier
     end
   end
 
-  def verify_doc_budget
-    over_budget = []
-    line_counts = {}
-    AUTO_LOAD_DOCS.each do |file|
-      content = File.read(File.join(ROOT, file), encoding: "UTF-8")
-      lines = content.lines.size
-      line_counts[file] = lines
-      if lines > AUTO_LOAD_BUDGET_LINES || content.length > AUTO_LOAD_BUDGET_CHARS
-        over_budget << "#{file} #{lines} 行 / #{content.length} 字符"
+    def verify_doc_budget
+      over_budget = []
+      compact_over = []
+      line_counts = {}
+      char_counts = {}
+      AUTO_LOAD_DOCS.each do |file|
+        content = File.read(File.join(ROOT, file), encoding: "UTF-8")
+        lines = content.lines.size
+        line_counts[file] = lines
+        char_counts[file] = content.length
+        if lines > AUTO_LOAD_BUDGET_LINES || content.length > AUTO_LOAD_BUDGET_CHARS
+          over_budget << "#{file} #{lines} 行 / #{content.length} 字符"
+        end
       end
+
+      OVERVIEW_ARCHITECTURE_DOCS.each do |file|
+        length = char_counts.fetch(file)
+        if length > OVERVIEW_ARCHITECTURE_BUDGET_CHARS
+          compact_over << "#{file} #{length} 字符"
+        end
+      end
+
+      threshold = "≤ #{AUTO_LOAD_BUDGET_LINES} 行 且 ≤ 20,000 字符"
+      compact_threshold = "≤ 1,000 字符（约 1k tokens）"
+      guardrails = File.read(File.join(ROOT, "ai-guardrails.md"), encoding: "UTF-8")
+      threshold_ok = guardrails.include?(threshold) && guardrails.include?(compact_threshold)
+
+      passed = over_budget.empty? && compact_over.empty? && threshold_ok
+      detail = if !threshold_ok
+        "ai-guardrails.md 缺少阈值文本「#{threshold}」或「#{compact_threshold}」，需同步 ai-guardrails.md 与本脚本常量。"
+      elsif !compact_over.empty?
+        "产品/架构入口超出 1k token 预算：#{compact_over.join('、')}（上限 #{OVERVIEW_ARCHITECTURE_BUDGET_CHARS} 字符），请索引化到 docs/ 子文档。"
+      elsif over_budget.empty?
+        sizes = AUTO_LOAD_DOCS.map { |file| "#{file} #{line_counts.fetch(file)} 行" }.join("、")
+        compact = OVERVIEW_ARCHITECTURE_DOCS.map { |file| "#{file} #{char_counts.fetch(file)} 字符" }.join("、")
+        "入口文档均在预算内：#{sizes}（上限 #{AUTO_LOAD_BUDGET_LINES} 行 / 20,000 字符）；#{compact}（产品/架构 ≤ #{OVERVIEW_ARCHITECTURE_BUDGET_CHARS} 字符）。"
+      else
+        "入口文档超出预算：#{over_budget.join('、')}（上限 #{AUTO_LOAD_BUDGET_LINES} 行 / 20,000 字符），请先索引化或归档到 docs/ 子文档。"
+      end
+
+      record("入口文档体量预算", passed, detail)
     end
-
-    threshold = "≤ #{AUTO_LOAD_BUDGET_LINES} 行 且 ≤ 20,000 字符"
-    guardrails = File.read(File.join(ROOT, "ai-guardrails.md"), encoding: "UTF-8")
-    threshold_ok = guardrails.include?(threshold)
-
-    passed = over_budget.empty? && threshold_ok
-    detail = if !threshold_ok
-      "ai-guardrails.md 缺少阈值文本「#{threshold}」，需同步 ai-guardrails.md 与本脚本常量。"
-    elsif over_budget.empty?
-      sizes = AUTO_LOAD_DOCS.map { |file| "#{file} #{line_counts.fetch(file)} 行" }.join("、")
-      "入口文档均在预算内：#{sizes}（上限 #{AUTO_LOAD_BUDGET_LINES} 行 / 20,000 字符）。"
-    else
-      "入口文档超出预算：#{over_budget.join('、')}（上限 #{AUTO_LOAD_BUDGET_LINES} 行 / 20,000 字符），请先索引化或归档到 docs/ 子文档。"
-    end
-
-    record("入口文档体量预算", passed, detail)
-  end
 
   def verify_project_agent_generator
     Dir.mktmpdir("agentrules-project") do |dir|

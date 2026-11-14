@@ -1,11 +1,11 @@
 <!-- GENERATED FILE — DO NOT EDIT.
-     Source: Alma rule documents and scripts/generate_claude_md.rb -->
+     Source: Willdeep rule documents and scripts/generate_claude_md.rb -->
 
 # GENERATED_CLAUDE.md
 
 > 由 `scripts/generate_claude_md.rb` 生成；请修改规则源文件后重新生成。
 > 规则画像：自定义选择
-> 生成来源：Alma 规则库。
+> 生成来源：Willdeep 规则库。
 > 模式：硬约束精简版（--compact），完整背景与细节见规则库原文。
 
 ## 使用说明
@@ -60,7 +60,8 @@
 - **MUST NOT**：把用户写给 AI/开发者的需求说明、验收标准、Prompt、规则、实现备注、系统行为参数、调试信息或运维/发布元数据，未经判断就当作最终用户可见文案。需求默认只定义产品行为，不等于界面文案；例如“每 5 秒刷新”应由程序实现刷新逻辑，不应因此显示成界面标签；仅当用户明确指定为展示文案，或信息确实是最终用户完成当前任务所必需时，才可展示，并须改写为符合最终用户角色、目标与操作场景的产品语言
 - **MUST**：根目录 `AGENTS.md` 只放全局约束；嵌套 `AGENTS.md` 必须声明 Scope 和 Parent，并只补充该目录的例外规则
 - **MUST NOT**：直接修改带 `GENERATED FILE — DO NOT EDIT` 标记的文件；必须修改源规则/模板后重新生成
-- **MUST**：会被会话自动整篇加载的入口文档（`AGENTS.md`、`CLAUDE.md`、`README.md`、`PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md` 及同类概览文档）必须控制在体量预算内（≤ 300 行 且 ≤ 20,000 字符，约 10k tokens）；超限必须索引化——主文档只留摘要与子文档入口，细节下沉到 `docs/` 子文档，见「长文档索引化与上下文预算」一节
+- **MUST**：会被会话自动整篇加载的入口文档（`AGENTS.md`、`CLAUDE.md`、`README.md` 及同类概览文档）必须控制在体量预算内（≤ 300 行 且 ≤ 20,000 字符，约 10k tokens）；超限必须索引化——主文档只留摘要与子文档入口，细节下沉到 `docs/` 子文档，见「长文档索引化与上下文预算」一节
+- **MUST**：`PRODUCT_OVERVIEW.md` 与 `ARCHITECTURE.md` 单独执行更严预算：≤ 1,000 字符（约 1k tokens）；写不下就把细节下沉到 `docs/product/`、`docs/architecture/` 等子文档，主文件只保留定位、版本、核心摘要与入口表
 - **MUST**：`PRODUCT_OVERVIEW.md`、`CHANGELOG.md`、`README.md` 这类概览与变更记录是参考文档，不是每轮必读的规则；自动加载只针对真正的规则文件（`AGENTS.md` / `CLAUDE.md` / 主题规则），参考文档在任务命中时才按需读取
 - **MUST NOT**：让入口文档随项目无限增长——超限仍不拆分，或把逐条接口字段、完整功能流水、历史版本明细、实现日志堆在概览文档里
 
@@ -277,5 +278,5 @@
 - **MUST NOT**：直接在 main/develop 上 commit；一律走 feature 分支 + PR
 - **MUST NOT**：一个 PR 混 feat + fix + refactor
 - **MUST NOT**：改了版本号不写 CHANGELOG，或 CHANGELOG 与代码不同步
-- **MUST**：`PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md`、`CHANGELOG.md` 按体量预算维护：入口文档超限必须索引化（细节下沉子文档并保留入口表），`CHANGELOG.md` 只保留最近版本、历史归档到 `docs/changelog/`（预算见 `ai-guardrails.md` 的「长文档索引化与上下文预算」）
+- **MUST**：`PRODUCT_OVERVIEW.md` 与 `ARCHITECTURE.md` 主文档 ≤ 1,000 字符（约 1k tokens），写不下则拆到 `docs/product/`、`docs/architecture/` 等子文档并在主文档保留入口表；`README.md`、`CHANGELOG.md` 等按 `ai-guardrails.md` 通用入口预算维护；`CHANGELOG.md` 只保留最近版本、历史归档到 `docs/changelog/`
 - **MUST**：`当前版本：vX.Y.Z` 必须留在 `PRODUCT_OVERVIEW.md` / `ARCHITECTURE.md` 主文档顶部，CI 与校验脚本依赖它，不得随细节下沉到子文档

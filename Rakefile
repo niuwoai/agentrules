@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Alma 规则库的本地验证入口。
+# Willdeep 规则库的本地验证入口。
 #
 # 用法：
 #   rake test   # 运行规则校验，报告只打印到 stdout

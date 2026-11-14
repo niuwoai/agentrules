@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.27.0] - 2026-09-30
+
+### Changed
+- `PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md` 主文压缩至 ≤1,000 字符；长内容迁至 `docs/product/`、`docs/architecture/` 并由入口表索引。
+- `verify_rules.rb` 对产品/架构主文单独体量校验；`ai-guardrails.md`、`version-control.md` 补充 1k 字符预算说明。
+- 规则库版本提升到 0.27.0。
+
+### Verification
+- `rake test`：PASS
+
 ## [0.26.0] - 2026-09-30
 
 ### Changed
