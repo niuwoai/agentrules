@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.26.0] - 2026-09-30
+
+### Changed
+- `version-control.md` 将版本号机制从 `-rcN` 预发布标识改为独立 Build 号：
+  - 版本号 `MAJOR.MINOR.PATCH` 仅体现功能变化（bugfix 不提升版本位）
+  - Build 号是单调递增整数，每次发布 +1，永不重置，用于标识第几次构建/发布
+  - 新增 Build 号在各技术栈的记录方式说明
+  - macOS/iOS 的 `CFBundleVersion` 与本规范 Build 号概念统一
+- 规则库版本提升到 0.26.0。
+
+### Verification
+- `rake test`：PASS
+
+## [0.25.0] - 2026-09-29
+
+### Added
+- `ai-guardrails.md` 与 `design.md` 明确要求将实现行为和用户可见文案分开：刷新频率等实现参数应由程序满足，不应自动变成界面标签；仅展示最终用户理解或操作所必需的信息。
+
+### Changed
+- README 的通用规则索引补充实现要求与界面文案边界说明。
+- 规则库版本提升到 0.25.0。
+
+### Verification
+- `rake test`：PASS；规则结构、必选规则覆盖、生成产物同步、文档体量、脚手架、版本一致性及 AGENTS 上溯链检查全部通过。
+
 ## [0.24.0] - 2026-09-28
 
 ### Added

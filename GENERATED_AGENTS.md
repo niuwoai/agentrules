@@ -19,9 +19,9 @@
 - 规则源文件以 GitHub 默认分支为准；本地存在 agentrules 仓库时优先读取同名本地文件。
 
 ## 按需规则索引
-- [AI 协作红线](https://github.com/xurenlu/agentrules/blob/main/ai-guardrails.md)（`ai-guardrails.md`）：文件编辑方式、破坏性操作确认、共享分支保护和如实汇报
+- [AI 协作红线](https://github.com/xurenlu/agentrules/blob/main/ai-guardrails.md)（`ai-guardrails.md`）：文件编辑方式、破坏性操作确认、需求文本与产品文案边界、界面要求与实现行为分离、共享分支保护和如实汇报
 - [编程通用规范](https://github.com/xurenlu/agentrules/blob/main/programming.md)（`programming.md`）：代码风格、错误处理、测试、版本控制、安全和日志
-- [多端产品设计规范](https://github.com/xurenlu/agentrules/blob/main/design.md)（`design.md`）：新项目启动门禁、UI 规范方向、docs 文档沉淀和多端规范
+- [多端产品设计规范](https://github.com/xurenlu/agentrules/blob/main/design.md)（`design.md`）：新项目启动门禁、界面呈现与实现行为分离、UI 规范方向和多端规范
 - [前端规范](https://github.com/xurenlu/agentrules/blob/main/frontend.md)（`frontend.md`）：TypeScript、React、状态管理、CSS、性能、安全和测试
 - [Go 规范](https://github.com/xurenlu/agentrules/blob/main/go.md)（`go.md`）：Go 项目结构、错误处理、并发、DI、测试、性能和 Go + React embed
 - [Python 规范](https://github.com/xurenlu/agentrules/blob/main/python.md)（`python.md`）：Python 环境、类型、异步、数据库、测试和常用库

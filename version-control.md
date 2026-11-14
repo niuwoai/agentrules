@@ -5,8 +5,9 @@
 > 本节是 AI 必守清单，违反即错误；下文各节是背景、模板和细节，按需阅读。
 
 - **MUST**：每次修改代码后同步更新版本号和 `CHANGELOG.md`
-- **MUST**：版本号采用语义化格式，允许 rc 预发布标识（如 `1.2.3-rc2`）
-- **MUST**：功能新增才提升正式版本位（MINOR/MAJOR），并把 rc 重置为 `rc1`；bugfix 只递增 rc 号（`-rc2` → `-rc3`），不得提升正式版本位（对外发布、须遵循标准 SemVer 的库/包除外，详见 `version-control.md` 语义化版本号一节）
+- **MUST**：版本号采用语义化格式 `MAJOR.MINOR.PATCH`（如 `1.2.3`），Build 号独立维护
+- **MUST**：Build 号是一个单调递增整数，每次发布 +1，永不重置；用于标识第几次构建/发布，不体现功能变化
+- **MUST**：功能新增才提升正式版本位（MINOR/MAJOR）；bugfix 只递增 Build 号，不得提升正式版本位（对外发布、须遵循标准 SemVer 的库/包除外，详见 `version-control.md` 语义化版本号一节）
 - **MUST**：前端与后端版本号保持一致；服务端 API 通过响应 header（如 `X-App-Version`）暴露当前版本
 - **MUST**：用户要求 git 提交时，打 `v{版本号}` tag 并随代码一起推送（远程是 GitHub 时推到 GitHub）
 - **MUST**：发布 tag 只能指向已合入默认分支的提交；tag、`PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md` 和 CHANGELOG 的版本必须一致，并由 CI 校验
@@ -48,18 +49,23 @@ hotfix/<问题描述>     # hotfix/critical-bug
 
 ## 语义化版本号
 
-格式：`MAJOR.MINOR.PATCH[-rcN]`（如 `1.4.2`、`1.5.0-rc3`）
+格式：`MAJOR.MINOR.PATCH`（如 `1.4.2`、`2.0.0`）
 
 ### 默认约定（业务项目 / 内部项目）
 
-开发期版本常态携带 `-rcN` 预发布标识，正式版本位只由功能变更驱动：
+版本号体现功能变化，Build 号体现构建/发布次数，两者独立：
 
-| 变更类型 | 版本号变化 | 示例 |
-|---------|-----------|------|
-| bugfix | 只递增 rc 号，不动正式版本位 | `1.5.0-rc2` → `1.5.0-rc3` |
-| 新增功能（向后兼容） | 提升 MINOR，rc 重置为 rc1 | `1.5.0-rc3` → `1.6.0-rc1` |
-| 破坏性变更 | 提升 MAJOR，rc 重置为 rc1 | `1.6.0-rc1` → `2.0.0-rc1` |
-| 正式发布 | 去掉 rc 后缀并打 tag | `1.6.0-rc4` → `1.6.0` |
+| 变更类型 | 版本号变化 | Build 号变化 |
+|---------|-----------|-------------|
+| bugfix | 不变 | +1 |
+| 新增功能（向后兼容） | MINOR +1，PATCH 归零 | +1 |
+| 破坏性变更 | MAJOR +1，MINOR/PATCH 归零 | +1 |
+
+**Build 号规则：**
+- 从 1 开始，每次发布（无论版本号是否变化）+1
+- 永不重置，即使 MAJOR 升级也继续递增
+- 用于追溯"这是第几次构建"，不承载语义
+- 显示方式：`v1.5.0 (build 13000)` 或仅内部记录
 
 ### 例外：标准 SemVer 项目
 
@@ -80,9 +86,15 @@ hotfix/<问题描述>     # hotfix/critical-bug
 - 多项目仓库：各子项目独立版本号，根目录 CHANGELOG 汇总
 
 ### 每次改动前先想
-- 这是修 bug？→ 递增 rc 号（标准 SemVer 项目递增 PATCH）
-- 加了新功能但 API 没变？→ MINOR
-- 删了接口 / 改了字段类型 / 行为不兼容？→ MAJOR
+- 这是修 bug？→ 只递增 Build 号（标准 SemVer 项目递增 PATCH）
+- 加了新功能但 API 没变？→ MINOR，Build 号 +1
+- 删了接口 / 改了字段类型 / 行为不兼容？→ MAJOR，Build 号 +1
+
+### Build 号在哪记录
+- Go 项目：源码里声明 `var Build = "13000"`（编译时 ldflags 注入也行）
+- 前端项目：`package.json` 新增 `build` 字段，或构建时注入环境变量
+- Python 项目：`pyproject.toml` / `__init__.py` 里的 `__build__`
+- CI/CD：构建流水线自动递增并注入，避免手动维护
 
 ### macOS/iOS 项目：Build 号同步
 
@@ -90,6 +102,7 @@ hotfix/<问题描述>     # hotfix/critical-bug
 - `CFBundleVersion` / `CURRENT_PROJECT_VERSION`（Build 号）每次发版 **+1**，从 1 开始递增，不重置
 - 改版本号时必须同时改 Build 号，两者不能脱节
 - 在哪改：`Info.plist` / `.xcconfig` / Xcode 项目设置 `CURRENT_PROJECT_VERSION`
+- 说明：iOS/macOS 的 Build 号与本规范的 Build 号概念一致，无需额外适配
 
 ## CHANGELOG.md
 
