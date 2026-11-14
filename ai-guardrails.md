@@ -20,7 +20,8 @@
 - **MUST NOT**：把用户写给 AI/开发者的需求说明、验收标准、Prompt、规则、实现备注、系统行为参数、调试信息或运维/发布元数据，未经判断就当作最终用户可见文案。需求默认只定义产品行为，不等于界面文案；例如“每 5 秒刷新”应由程序实现刷新逻辑，不应因此显示成界面标签；仅当用户明确指定为展示文案，或信息确实是最终用户完成当前任务所必需时，才可展示，并须改写为符合最终用户角色、目标与操作场景的产品语言
 - **MUST**：根目录 `AGENTS.md` 只放全局约束；嵌套 `AGENTS.md` 必须声明 Scope 和 Parent，并只补充该目录的例外规则
 - **MUST NOT**：直接修改带 `GENERATED FILE — DO NOT EDIT` 标记的文件；必须修改源规则/模板后重新生成
-- **MUST**：会被会话自动整篇加载的入口文档（`AGENTS.md`、`CLAUDE.md`、`README.md`、`PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md` 及同类概览文档）必须控制在体量预算内（≤ 300 行 且 ≤ 20,000 字符，约 10k tokens）；超限必须索引化——主文档只留摘要与子文档入口，细节下沉到 `docs/` 子文档，见「长文档索引化与上下文预算」一节
+- **MUST**：会被会话自动整篇加载的入口文档（`AGENTS.md`、`CLAUDE.md`、`README.md` 及同类概览文档）必须控制在体量预算内（≤ 300 行 且 ≤ 20,000 字符，约 10k tokens）；超限必须索引化——主文档只留摘要与子文档入口，细节下沉到 `docs/` 子文档，见「长文档索引化与上下文预算」一节
+- **MUST**：`PRODUCT_OVERVIEW.md` 与 `ARCHITECTURE.md` 单独执行更严预算：≤ 1,000 字符（约 1k tokens）；写不下就把细节下沉到 `docs/product/`、`docs/architecture/` 等子文档，主文件只保留定位、版本、核心摘要与入口表
 - **MUST**：`PRODUCT_OVERVIEW.md`、`CHANGELOG.md`、`README.md` 这类概览与变更记录是参考文档，不是每轮必读的规则；自动加载只针对真正的规则文件（`AGENTS.md` / `CLAUDE.md` / 主题规则），参考文档在任务命中时才按需读取
 - **MUST NOT**：让入口文档随项目无限增长——超限仍不拆分，或把逐条接口字段、完整功能流水、历史版本明细、实现日志堆在概览文档里
 
@@ -113,7 +114,9 @@ ssh -o BatchMode=yes <host> true
 
 | 文档类型 | 体量预算 | 超限动作 |
 |----------|----------|----------|
-| 自动加载类入口文档（`AGENTS.md`、`CLAUDE.md`、`README.md`、`PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md`） | ≤ 300 行 且 ≤ 20,000 字符（约 10k tokens） | 必须索引化：主文档只留摘要与子文档入口表 |
+| 自动加载类入口文档（`AGENTS.md`、`CLAUDE.md`、`README.md`） | ≤ 300 行 且 ≤ 20,000 字符（约 10k tokens） | 必须索引化：主文档只留摘要与子文档入口表 |
+| 产品概览 `PRODUCT_OVERVIEW.md`、架构说明 `ARCHITECTURE.md` | ≤ 1,000 字符（约 1k tokens）；同时仍受行数上限 300 行保护 | 必须索引化：主文档只留定位、当前版本、能力/边界摘要与 `docs/` 入口表 |
+| `README.md`、`CHANGELOG.md`（参考与变更） | ≤ 300 行 且 ≤ 20,000 字符 | 变更记录超窗归档到 `docs/changelog/`；README 超长按索引化原则拆链到子文档 |
 | 按需读取的主题/参考文档（规范文档、项目详设） | ≤ 2,000 行 | > 2,000 行应拆分，> 3,000 行必须拆分 |
 | 变更记录 `CHANGELOG.md` | 只保留最近 3 个版本或最近 90 天 | 更早段落归档到 `docs/changelog/`，主文件保留归档索引 |
 
@@ -139,7 +142,7 @@ ssh -o BatchMode=yes <host> true
 - 只搬细节不改事实；历史内容进 Git 可追溯。
 - 不得为了「不过预算」删掉真实信息，只能搬走或改写成摘要 + 链接。
 
-阈值文本与 `scripts/verify_rules.rb` 的常量保持一致，脚本会检查入口文档体量。
+阈值文本与 `scripts/verify_rules.rb` 的常量保持一致：脚本检查 `README.md` / `CHANGELOG.md` 的 300 行与 20,000 字符预算，并对 `PRODUCT_OVERVIEW.md` / `ARCHITECTURE.md` 额外执行 ≤ 1,000 字符检查。
 
 ## 生成文件规则
 

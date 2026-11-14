@@ -16,7 +16,7 @@
 - **MUST NOT**：直接在 main/develop 上 commit；一律走 feature 分支 + PR
 - **MUST NOT**：一个 PR 混 feat + fix + refactor
 - **MUST NOT**：改了版本号不写 CHANGELOG，或 CHANGELOG 与代码不同步
-- **MUST**：`PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md`、`CHANGELOG.md` 按体量预算维护：入口文档超限必须索引化（细节下沉子文档并保留入口表），`CHANGELOG.md` 只保留最近版本、历史归档到 `docs/changelog/`（预算见 `ai-guardrails.md` 的「长文档索引化与上下文预算」）
+- **MUST**：`PRODUCT_OVERVIEW.md` 与 `ARCHITECTURE.md` 主文档 ≤ 1,000 字符（约 1k tokens），写不下则拆到 `docs/product/`、`docs/architecture/` 等子文档并在主文档保留入口表；`README.md`、`CHANGELOG.md` 等按 `ai-guardrails.md` 通用入口预算维护；`CHANGELOG.md` 只保留最近版本、历史归档到 `docs/changelog/`
 - **MUST**：`当前版本：vX.Y.Z` 必须留在 `PRODUCT_OVERVIEW.md` / `ARCHITECTURE.md` 主文档顶部，CI 与校验脚本依赖它，不得随细节下沉到子文档
 
 ## 分支策略
@@ -225,7 +225,7 @@ hotfix/<问题描述>     # hotfix/critical-bug
 
 ### 体量预算与索引式结构
 
-入口文档受 `ai-guardrails.md` 的体量预算约束（≤ 300 行 且 ≤ 20,000 字符）。超预算时按下面顺序下沉：
+`PRODUCT_OVERVIEW.md` 受 ≤ 1,000 字符（约 1k tokens）约束；其他通用入口文档受 `ai-guardrails.md` 预算（≤ 300 行 且 ≤ 20,000 字符）。超预算时按下面顺序下沉：
 
 1. 先搬 API 概览与完整功能清单。
 2. 再搬运行与部署细节。
@@ -261,7 +261,7 @@ hotfix/<问题描述>     # hotfix/critical-bug
 - **架构变更必须同步更新**：技术栈、系统边界、模块拆分或合并、服务通信、数据存储、接口协议、认证授权、异步任务、部署拓扑、关键第三方集成等发生变化时，必须在同一改动中更新文档。
 - **文档必须可追溯**：文件顶部记录最后更新日期和当前版本；重要取舍应链接到 ADR 或在文档中说明背景、决策和影响。
 - **不要把普通实现细节都塞进去**：`ARCHITECTURE.md` 记录稳定的系统级设计；局部实现细节留在模块 README、代码注释或 ADR，避免文档长成技术墓志铭。
-- **入口文档预算**：架构文档同样受入口文档预算约束——系统上下文图、模块职责表、关键决策摘要留在主文档，接口完整字段、逐模块实现细节和 ADR 全文下沉到 `docs/`。
+- **入口文档预算**：`ARCHITECTURE.md` 主文档 ≤ 1,000 字符（约 1k tokens）——系统上下文图、模块职责表、关键决策摘要可保留精简版；接口完整字段、逐模块实现细节和 ADR 全文下沉到 `docs/architecture/`。
 
 ### 推荐模板
 ````markdown

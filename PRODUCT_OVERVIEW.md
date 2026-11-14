@@ -1,46 +1,21 @@
 # Product Overview
 
-> 最后更新：2026-09-30 | 当前版本：v0.26.0
+> 最后更新：2026-09-30 | 当前版本：v0.27.0
 
 ## 项目简介
-Alma 规则库沉淀日常软件开发、部署、数据库、前端、设计和项目协作规范，供 AI 助手和开发者在新项目、迭代、排障、交付时统一参考。
+Alma 规则库：面向 AI 与开发者的 Markdown 规范集合，覆盖协作、编程、设计、前端、数据库、部署与版本；支持按画像生成规则入口与分层 `AGENTS.md`。
 
-## 核心内容
-- 双层结构：每个主题文档顶部是「硬约束」清单（只含 MUST / MUST NOT，供 AI 必守），正文是背景、模板与细节（按需阅读）
-- AI 协作红线：写文件方式优先级（写文件工具 → 脚本 → heredoc）、破坏性操作确认、共享分支保护、如实汇报、需求文本与产品文案边界，以及嵌套 `AGENTS.md` 的作用域和生成文件保护；required 文档，所有画像自动包含
-- 编程最佳实践：代码风格、错误处理、测试、安全、日志、设计原则
-- 多端产品设计规范：新项目启动门禁、第一轮确认清单、推荐默认方案、UI 规范方向推荐、文档优先、启动文档模板、UI 体系、多语言计划、数据库与数据确认、H5、电脑版网页、macOS App、Android App
-- 前端规范：TypeScript、React、状态管理、样式、性能、安全、测试
-- Go 与 Python 规范：项目结构、错误处理、测试、性能、常用库
-- 数据库规范：迁移、查询、同步、索引、回滚和 CI/CD 集成；迁移默认必须幂等，只有数据库确实无法支持时才能走受控例外
-- 部署规范：版本、备份、健康检查、回滚、发布反馈
-- 版本控制规范：分支、语义化版本、macOS/iOS Build 号、CHANGELOG、Product Overview、Architecture 文档、`.gitignore`、提交流程，并提供两类文档的职责、更新时机与可复制模板
-- Linux 服务器规范：安全基线、监控、备份、日志、性能和应急响应
-- 工具与发布：单文件生成器支持完整正文、`--compact` 硬约束版和 `--index` 按需索引版；Ruby 脚本也能扫描目标项目并生成根目录 + 模块级的分层 `AGENTS.md`；校验脚本输出 JSON 和 Markdown 报告，CI 检查规则结构、版本一致性、两类生成产物同步和脚手架重复执行安全性；根目录 `Rakefile` 把本地验证收敛为 `rake test`（默认任务，等价 `ruby scripts/verify_rules.rb --no-report`）；通过主分支门禁的版本 tag 会发布 `CLAUDE.md` 与 `AGENTS.md`
-- 上下文预算与长文档索引化：入口文档（`AGENTS.md` / `CLAUDE.md` / `README.md` / `PRODUCT_OVERVIEW.md` / `ARCHITECTURE.md`）超过 300 行或 20,000 字符必须索引化，细节下沉 `docs/` 子文档并保留入口表；`CHANGELOG.md` 只保留最近版本，历史归档到 `docs/changelog/`
+## 核心能力（摘要）
+- 主题「硬约束 + 正文」；必选 `ai-guardrails.md`。
+- 四文档：`README`、`CHANGELOG`、`PRODUCT_OVERVIEW`、`ARCHITECTURE`（概览/架构主文各 ≤1k 字符）。
+- `rake test` 校验；版本 tag 发布 `CLAUDE.md` / `AGENTS.md`。
 
-## 使用方式
-- 新项目启动时先判断项目阶段；若缺少产品定义、设计系统、架构或协作规则文档，先按 `design.md` 生成/更新 `AGENTS.md`、`CLAUDE.md`、`PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md` 或等价文档。
-- 新项目必须创建根目录 `ARCHITECTURE.md`；技术栈、模块边界、服务通信、数据存储、接口协议、认证授权、部署拓扑或关键集成变更时，必须同步维护该文档。
-- 新项目第一轮沟通按 6-8 个高价值主题确认，避免把用户拖进过细的问卷。
-- 架构、数据库、部署、权限、测试等选型先给最佳实践建议，再让用户确认例外。
-- UI 规范按平台和应用类型先给推荐方向，用户确认后沉淀到 `docs/design-system.md`、`docs/ui-tokens.md` 等仓库文档。
-- 涉及界面设计或前端实现时，先按 `design.md` 与用户确认设计简报和多语言计划。
-- 涉及数据库结构变更时，必须参考 `database-migrations.md`。
-- 涉及发布部署时，必须参考 `deployment.md`、`version-control.md` 和对应语言规范。
-- 每次规则变更后，更新 `CHANGELOG.md`；功能性规则变化同步更新本文件。
-- 需要生成 AI 协作规则入口时，运行 `ruby scripts/generate_claude_md.rb --list` 查看项目画像；项目级规则用 `--compact` 输出硬约束版，全局 `AGENTS.md` 用 `--index` 输出按需索引版，完整规则留在规则库按任务读取。
-- 需要为真实项目初始化分层规则时，先运行 `ruby scripts/generate_project_agents.rb --target /path/to/project --dry-run` 审核计划，再去掉 `--dry-run` 创建缺失文件；自动识别不符合项目实际时用 `--template` 明确指定。
-- 概览与变更类文档按需读取，不作为每轮自动加载的规则；超长时按入口表读取子文档。
-- 本地验证统一跑 `rake test`：它等价于 `ruby scripts/verify_rules.rb --no-report`，报告只打印到 stdout、不生成 `tmp/` 报告文件；不带参数的 `rake` 默认执行同一任务，校验失败时命令以非零退出码结束。
+## 文档入口
+| 子文档 | 何时读 |
+|--------|--------|
+| [docs/product/overview-details.md](docs/product/overview-details.md) | 能力、用法、待办 |
+| [README.md](README.md) | 查主题规范 |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | 改脚本/CI |
 
-## 维护规则
-- 单个文件超过 2000 行时应考虑拆分，超过 3000 行必须拆分。
-- 新增规范优先独立成章或新文件，再从 `README.md` 和相关主题文件挂入口。
-- 规则应写成可执行的约束，避免只有口号没有验收标准。
-- 安全、版本、迁移、部署等高风险规则必须明确风险和处理方式。
-- 入口文档遵守 `ai-guardrails.md` 的体量预算（≤ 300 行 且 ≤ 20,000 字符），超限先把细节搬进子文档，再谈拆文件。
-
-## 已知问题 / 待办
-- [ ] 增加自动化校验脚本，检查 README 链接、文件行数和关键规则是否缺失。
-- [ ] 为设计规范补充可复制的新项目设计简报模板。
+## 限制
+细节见 [overview-details](docs/product/overview-details.md)。
