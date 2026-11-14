@@ -279,13 +279,13 @@ class RulesBundleBuilder
 
     <<~MARKDOWN.strip
       <!-- GENERATED FILE — DO NOT EDIT.
-           Source: Alma rule documents and scripts/generate_claude_md.rb -->
+           Source: Willdeep rule documents and scripts/generate_claude_md.rb -->
 
       # #{document_name}
 
       > 由 `scripts/generate_claude_md.rb` 生成；请修改规则源文件后重新生成。
       > 规则画像：#{profile_line}
-      > 生成来源：Alma 规则库。#{mode_line}
+      > 生成来源：Willdeep 规则库。#{mode_line}
     MARKDOWN
   end
 
