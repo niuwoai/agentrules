@@ -21,7 +21,8 @@
 - **MUST**：根目录 `AGENTS.md` 只放全局约束；嵌套 `AGENTS.md` 必须声明 Scope 和 Parent，并只补充该目录的例外规则
 - **MUST NOT**：直接修改带 `GENERATED FILE — DO NOT EDIT` 标记的文件；必须修改源规则/模板后重新生成
 - **MUST**：会被会话自动整篇加载的入口文档（`AGENTS.md`、`CLAUDE.md`、`README.md` 及同类概览文档）必须控制在体量预算内（≤ 300 行 且 ≤ 20,000 字符，约 10k tokens）；超限必须索引化——主文档只留摘要与子文档入口，细节下沉到 `docs/` 子文档，见「长文档索引化与上下文预算」一节
-- **MUST**：`PRODUCT_OVERVIEW.md` 与 `ARCHITECTURE.md` 单独执行更严预算：≤ 1,000 字符（约 1k tokens）；写不下就把细节下沉到 `docs/product/`、`docs/architecture/` 等子文档，主文件只保留定位、版本、核心摘要与入口表
+- **MUST**：业务代码仓库的 `PRODUCT_OVERVIEW.md` 与 `ARCHITECTURE.md` 单独执行更严预算：≤ 1,000 字符（约 1k tokens）；写不下就把细节下沉到 `docs/product/`、`docs/architecture/` 等子文档，主文件只保留定位、版本、核心摘要与入口表
+- **例外：规则库仓库（meta）**：纯规则/生成器仓库不强制要求存在或维护产品概览与架构主文档；在**业务仓库**中仍按上条执行。勿把规则正文、CHANGELOG 条目或用户 Prompt 当界面文案（见需求与界面红线）
 - **MUST**：`PRODUCT_OVERVIEW.md`、`CHANGELOG.md`、`README.md` 这类概览与变更记录是参考文档，不是每轮必读的规则；自动加载只针对真正的规则文件（`AGENTS.md` / `CLAUDE.md` / 主题规则），参考文档在任务命中时才按需读取
 - **MUST NOT**：让入口文档随项目无限增长——超限仍不拆分，或把逐条接口字段、完整功能流水、历史版本明细、实现日志堆在概览文档里
 

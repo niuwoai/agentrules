@@ -11,7 +11,8 @@
 - **MUST**：前端与后端版本号保持一致；服务端 API 通过响应 header（如 `X-App-Version`）暴露当前版本
 - **MUST**：用户要求 git 提交时，打 `v{版本号}` tag 并随代码一起推送（远程是 GitHub 时推到 GitHub）
 - **MUST**：发布 tag 只能指向已合入默认分支的提交；tag、`PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md` 和 CHANGELOG 的版本必须一致，并由 CI 校验
-- **MUST**：新项目创建根目录 `.gitignore` 和 `ARCHITECTURE.md`；架构变更在同一改动中更新文档
+- **MUST**：业务代码仓库在新项目时创建根目录 `.gitignore` 和 `ARCHITECTURE.md`；架构变更在同一改动中更新文档
+- **例外：规则库仓库（meta）**：仅维护 Markdown 规则、生成器与校验脚本的仓库（如 `niuwoai/agentrules`）**不**强制套用「业务四文档」门禁——不要求因缺失 `PRODUCT_OVERVIEW.md` / `ARCHITECTURE.md` 而阻断开发；本仓库若保留二者仅为发布/CI 自检与入口索引，**不得**在其它仓库中推断「规则库也必须补齐产品概览与架构主文档」。规则库发版以 `README.md`、`CHANGELOG.md`、主题规则与 `rake test` 为准；无应用 Schema 时 **MUST NOT** 为规则库凭空编造数据库 migration
 - **MUST**：敏感文件（`.env`、密钥等）必须列入 `.gitignore`，不得提交
 - **MUST NOT**：直接在 main/develop 上 commit；一律走 feature 分支 + PR
 - **MUST NOT**：一个 PR 混 feat + fix + refactor

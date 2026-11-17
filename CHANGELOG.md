@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.28.33] - 2026-03-22
+
+### Changed
+- `version-control.md` / `ai-guardrails.md`：**规则库仓库（meta）** 特例——不强制业务四文档门禁；勿为规则库编造 migration；业务代码仓库仍须 PRODUCT_OVERVIEW / ARCHITECTURE。
+- `generate_claude_md.rb` / `CLAUDE.md` / `GENERATED_CLAUDE.md`：「始终遵守」中区分业务仓库与规则库例外。
+- 规则库版本提升到 0.28.33。
+
+### Verification
+- `rake test`：PASS
+
 ## [0.28.32] - 2026-03-22
 
 ### Changed
