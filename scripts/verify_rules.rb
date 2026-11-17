@@ -226,11 +226,11 @@ class RuleVerifier
   end
 
   def extract_version(path)
-    File.read(path, encoding: "UTF-8")[/当前版本：v([0-9]+\.[0-9]+\.[0-9]+(?:-rc\d+)?)/, 1]
+    File.read(path, encoding: "UTF-8")[/当前版本：v([0-9]+\.[0-9]+\.[0-9]+)/, 1]
   end
 
   def extract_changelog_version
-    File.read(CHANGELOG, encoding: "UTF-8")[/^## \[([0-9]+\.[0-9]+\.[0-9]+(?:-rc\d+)?)\]/, 1]
+    File.read(CHANGELOG, encoding: "UTF-8")[/^## \[([0-9]+\.[0-9]+\.[0-9]+)\]/, 1]
   end
 
   def normalize_version(value)

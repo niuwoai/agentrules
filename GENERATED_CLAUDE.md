@@ -105,6 +105,9 @@
 - **MUST**：新项目确认多语言范围（首发/后续语言、默认语言、fallback、日期/数字/货币格式、是否 RTL）后再选 i18n 方案
 - **MUST**：所有可见文案走 i18n/平台本地化资源，不散落在视图代码里
 - **MUST**：将界面呈现与功能/架构行为分开处理；刷新频率、轮询间隔、缓存策略等实现要求应由程序实现，不因需求中提及就显示在界面上，只有用户理解或操作所必需的信息才作为文案呈现
+- **MUST**：界面实现保持简洁，优先布局、留白与可识别的控件形态；不把 AI 协作者或产品方的需求原文、验收清单、实现备注抄进界面
+- **MUST NOT**：用长段说明文字「教用户这个按钮/图标是干什么的」；控件若凭图标/位置/平台惯例即可理解，则不加说明标签或 helper 文案
+- **MUST NOT**：为每个区块堆叠标题、副标题、提示、占位说明和重复引导；能用一个主操作或一个空状态解决的，不铺满文字
 - **MUST**：加载、空状态、错误、无权限、成功反馈、危险操作确认等状态必须设计
 - **MUST**：需求变化时同步回写启动文档；影响系统边界/模块/数据流/部署时同步更新 `ARCHITECTURE.md`
 - **MUST NOT**：关键决策只放 memory 或聊天记录；仓库文档是唯一事实来源
@@ -267,9 +270,9 @@
 ## 硬约束
 
 - **MUST**：每次修改代码后同步更新版本号和 `CHANGELOG.md`
-- **MUST**：版本号采用语义化格式 `MAJOR.MINOR.PATCH`（如 `1.2.3`），Build 号独立维护
-- **MUST**：Build 号是一个单调递增整数，每次发布 +1，永不重置；用于标识第几次构建/发布，不体现功能变化
-- **MUST**：功能新增才提升正式版本位（MINOR/MAJOR）；bugfix 只递增 Build 号，不得提升正式版本位（对外发布、须遵循标准 SemVer 的库/包除外，详见 `version-control.md` 语义化版本号一节）
+- **MUST**：版本号格式 `MAJOR.MINOR.BUILD`（如 `1.2.00001`），三段用点分隔
+- **MUST**：BUILD 是单调递增整数，从 1 开始，每次发布 +1，永不重置；如 `1.2.00001` → `1.2.00002` → `1.3.00003`
+- **MUST**：功能新增提升 MINOR 或 MAJOR；bugfix 只递增 BUILD，不提升前两段
 - **MUST**：前端与后端版本号保持一致；服务端 API 通过响应 header（如 `X-App-Version`）暴露当前版本
 - **MUST**：用户要求 git 提交时，打 `v{版本号}` tag 并随代码一起推送（远程是 GitHub 时推到 GitHub）
 - **MUST**：发布 tag 只能指向已合入默认分支的提交；tag、`PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md` 和 CHANGELOG 的版本必须一致，并由 CI 校验
@@ -279,4 +282,4 @@
 - **MUST NOT**：一个 PR 混 feat + fix + refactor
 - **MUST NOT**：改了版本号不写 CHANGELOG，或 CHANGELOG 与代码不同步
 - **MUST**：`PRODUCT_OVERVIEW.md` 与 `ARCHITECTURE.md` 主文档 ≤ 1,000 字符（约 1k tokens），写不下则拆到 `docs/product/`、`docs/architecture/` 等子文档并在主文档保留入口表；`README.md`、`CHANGELOG.md` 等按 `ai-guardrails.md` 通用入口预算维护；`CHANGELOG.md` 只保留最近版本、历史归档到 `docs/changelog/`
-- **MUST**：`当前版本：vX.Y.Z` 必须留在 `PRODUCT_OVERVIEW.md` / `ARCHITECTURE.md` 主文档顶部，CI 与校验脚本依赖它，不得随细节下沉到子文档
+- **MUST**：`当前版本：vMAJOR.MINOR.BUILD`（如 `v1.2.00005`）必须留在 `PRODUCT_OVERVIEW.md` / `ARCHITECTURE.md` 主文档顶部，CI 与校验脚本依赖它，不得随细节下沉到子文档

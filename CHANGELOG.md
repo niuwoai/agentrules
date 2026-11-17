@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.28.00028] - 2026-03-22
+
+### Changed
+- `design.md`：界面设计硬约束补充「简洁、少字、可点即懂」；禁止把需求/验收原文抄进界面，禁止用长说明教用户控件用途。
+- `version-control.md`：默认版本号由 `MAJOR.MINOR.PATCH` + 独立 Build 改为 `MAJOR.MINOR.BUILD`（第三段每次发版从 1 递增）；示例与 tag、概览文档格式同步；新增「已废弃 `0.00.000-rc{xx}` / `-rcN`」迁移说明。
+- `scripts/verify_rules.rb`、`ai-guardrails.md`：版本解析与入口文档说明对齐 `MAJOR.MINOR.BUILD`。
+- 规则库版本提升到 0.28.00028。
+
+### Verification
+- `rake test`：PASS
+
 ## [0.27.0] - 2026-09-30
 
 ### Changed
