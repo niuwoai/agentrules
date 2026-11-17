@@ -33,10 +33,12 @@
 - 不要把需求、验收、Prompt、实现参数当用户界面文案；实现行为由代码完成，界面少字、可点即懂。
 - 用户可见文案走 i18n；新项目先落启动文档再大规模编码；关键决策写仓库文档，不单靠聊天记录。
 
-**工程**
-- SQL 参数化；核心逻辑有测；错误带上下文；单文件超过 3000 行必须拆分。
-- 发版：`MAJOR.MINOR.BUILD`，每次发版 BUILD +1；改代码同步 CHANGELOG；用户要求提交时打 tag 并推送。
-- 入口文档控体量：概览类 ≤300 行且 ≤20k 字符，产品/架构主文 ≤1k 字符，超限索引化到 `docs/`。
+  **工程**
+  - SQL 参数化；核心逻辑有测；错误带上下文；单文件超过 3000 行必须拆分。
+  - 发版：`MAJOR.MINOR.BUILD`，每次发版 BUILD +1；改代码同步 CHANGELOG；用户要求提交时打 tag 并推送。
+  - 入口文档控体量：概览类 ≤300 行且 ≤20k 字符，产品/架构主文 ≤1k 字符，超限索引化到 `docs/`。
+  - 有 Schema 变更须走迁移：`up`/`down` 成对，提供 `migrate up|down|status`；`down` 须验证，prod 回滚谨慎（见 `database-migrations.md`）。
+  - 业务仓库维护 `README.md`、`CHANGELOG.md`、`PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md`（或等价文档）；缺则新建，有架构/产品变化时同步更新。
 
 ## 按需规则索引
 - [AI 协作红线](https://github.com/niuwoai/agentrules/blob/main/ai-guardrails.md)（`ai-guardrails.md`）：文件编辑方式、破坏性操作确认、需求文本与产品文案边界、界面要求与实现行为分离、共享分支保护和如实汇报
