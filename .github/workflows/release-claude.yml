@@ -35,8 +35,8 @@ jobs:
 
       - name: Generate final rule artifacts
         run: |
-          ruby scripts/generate_claude_md.rb --all --compact --output CLAUDE.md --force
-          ruby scripts/generate_claude_md.rb --all --index --output AGENTS.md --force
+            ruby scripts/generate_claude_md.rb --all --index --output CLAUDE.md --force
+            ruby scripts/generate_claude_md.rb --all --index --output AGENTS.md --force
 
       - name: Create or update GitHub Release
         env:

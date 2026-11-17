@@ -12,7 +12,8 @@ RuleDoc = Struct.new(:key, :file, :title, :summary, :tags, keyword_init: true)
 
 ROOT = File.expand_path("..", __dir__)
 DEFAULT_OUTPUT = "CLAUDE.md"
-RULES_REPOSITORY_URL = "https://github.com/xurenlu/agentrules/blob/main"
+RULES_REPOSITORY_URL = "https://github.com/niuwoai/agentrules/blob/main"
+RULES_CANONICAL_URL = "#{RULES_REPOSITORY_URL}/CLAUDE.md"
 
 def output_document_name(path)
   File.basename(path.to_s.empty? ? DEFAULT_OUTPUT : path)
@@ -266,28 +267,33 @@ class RulesBundleBuilder
     output_document_name(@options[:output])
   end
 
-  def front_matter
-    profile_names = Array(@options[:profiles]).map { |key| PROFILES.fetch(key, { name: key })[:name] }
-    profile_line = profile_names.empty? ? "自定义选择" : profile_names.join("、")
-    mode_line = if @options[:index]
-                  "\n> 模式：按需读取索引版（--index），不内嵌主题规则正文。"
-                elsif @options[:compact]
-                  "\n> 模式：硬约束精简版（--compact），完整背景与细节见规则库原文。"
-                else
-                  ""
-                end
+    def front_matter
+      profile_names = Array(@options[:profiles]).map { |key| PROFILES.fetch(key, { name: key })[:name] }
+      profile_line = profile_names.empty? ? "自定义选择" : profile_names.join("、")
+      mode_line = if @options[:index]
+                    if claude_index_output?
+                      "\n> 模式：对外发布概要索引（--index），规则正文在 GitHub 按需读取，不内嵌于本文件。"
+                    else
+                      "\n> 模式：按需读取索引版（--index），不内嵌主题规则正文。"
+                    end
+                  elsif @options[:compact]
+                    "\n> 模式：硬约束精简版（--compact），完整背景与细节见规则库原文。"
+                  else
+                    ""
+                  end
+      canonical_line = claude_index_output? ? "\n> 规范地址：`#{RULES_CANONICAL_URL}`" : ""
 
-    <<~MARKDOWN.strip
-      <!-- GENERATED FILE — DO NOT EDIT.
-           Source: Willdeep rule documents and scripts/generate_claude_md.rb -->
+      <<~MARKDOWN.strip
+        <!-- GENERATED FILE — DO NOT EDIT.
+             Source: Willdeep rule documents and scripts/generate_claude_md.rb -->
 
-      # #{document_name}
+        # #{document_name}
 
-      > 由 `scripts/generate_claude_md.rb` 生成；请修改规则源文件后重新生成。
-      > 规则画像：#{profile_line}
-      > 生成来源：Willdeep 规则库。#{mode_line}
-    MARKDOWN
-  end
+        > 由 `scripts/generate_claude_md.rb` 生成；请修改规则源文件后重新生成。
+        > 规则画像：#{profile_line}
+        > 生成来源：Willdeep 规则库。#{canonical_line}#{mode_line}
+      MARKDOWN
+    end
 
   def instructions
     return index_instructions if @options[:index]
@@ -311,19 +317,42 @@ class RulesBundleBuilder
     MARKDOWN
   end
 
-  def index_instructions
-    <<~MARKDOWN.strip
-      ## 使用说明
+    def index_instructions
+      if claude_index_output?
+        base = @options[:index_base].to_s.sub(%r{/\z}, "")
+        return <<~MARKDOWN.strip
+          ## 使用说明
 
-      - 本文件是规则索引，不内嵌主题规则正文；不要因为看到索引就一次性读取全部规则。
-      - 指令优先级：系统 / 开发者 / 用户指令 > 目标仓库内更具体的 `AGENTS.md` / `CLAUDE.md` > 本索引。
-      - 开工前根据任务类型，只读取下方索引中直接相关的规则文件；任务范围扩大时再补读。
-      - 修改任何文件前先检查目标仓库的本地规则、工作区状态和既有实现，保留用户已有改动。
-      - 涉及代码时至少读取 `ai-guardrails.md`、`programming.md`；涉及提交、版本或发布时再读取 `version-control.md`。
-      - 不得输出或提交密钥、Token、凭据、个人隐私数据；疑似敏感信息先停止扩散并脱敏处理。
-      - 规则源文件以 GitHub 默认分支为准；本地存在 agentrules 仓库时优先读取同名本地文件。
-    MARKDOWN
-  end
+          - **本文件是概要索引**，不把各主题「硬约束」正文塞进系统提示；保持短，避免上下文膨胀。
+          - **规范全集地址**：#{RULES_CANONICAL_URL}（与本文件同源，随仓库发布更新）。
+          - **按需加载主题规则**：仅当任务命中时，再读取下方链接对应文件；不要因看到文件名列表就一次性拉取全部规则。
+          - **URL 推导**：主题规则默认位于同一仓库 `main` 分支根目录，模式为 `#{base}/<文件名>`。例如 `ai-guardrails.md` → `#{base}/ai-guardrails.md`；索引未列出的其它 `.md` 规则（若存在）按同模式推导，仅在与任务相关时读取。
+          - **本地优先**：若工作区已克隆 [niuwoai/agentrules](https://github.com/niuwoai/agentrules) 或已 vendor 同名文件，优先读本地文件，与远程内容冲突时以**目标业务仓库**内更具体的 `AGENTS.md` / `CLAUDE.md` 为准。
+          - **优先级**：系统 / 开发者 / 用户指令 > 目标仓库内更具体的 `AGENTS.md` / `CLAUDE.md` > 本索引。
+          - **最低必读（涉及改代码时）**：先读 `ai-guardrails.md`、`programming.md`；提交、发版、打 tag 再读 `version-control.md`；UI 相关再读 `design.md` / `frontend.md`。
+          - 不得输出或提交密钥、Token、凭据、个人隐私数据。
+        MARKDOWN
+      end
+
+      <<~MARKDOWN.strip
+        ## 使用说明
+
+        - 本文件是规则索引，不内嵌主题规则正文；不要因为看到索引就一次性读取全部规则。
+        - 指令优先级：系统 / 开发者 / 用户指令 > 目标仓库内更具体的 `AGENTS.md` / `CLAUDE.md` > 本索引。
+        - 开工前根据任务类型，只读取下方索引中直接相关的规则文件；任务范围扩大时再补读。
+        - 修改任何文件前先检查目标仓库的本地规则、工作区状态和既有实现，保留用户已有改动。
+        - 涉及代码时至少读取 `ai-guardrails.md`、`programming.md`；涉及提交、版本或发布时再读取 `version-control.md`。
+        - 不得输出或提交密钥、Token、凭据、个人隐私数据；疑似敏感信息先停止扩散并脱敏处理。
+        - 规则源文件以 GitHub 默认分支为准；本地存在 agentrules 仓库时优先读取同名本地文件。
+      MARKDOWN
+    end
+
+    def claude_index_output?
+      return false unless @options[:index]
+
+      base = File.basename(@options[:output].to_s)
+      base.casecmp?(DEFAULT_OUTPUT) || base.casecmp?("GENERATED_CLAUDE.md")
+    end
 
   def source_index
     return embedded_source_index unless @options[:index]
@@ -419,7 +448,7 @@ def parse_options(argv)
       options[:all] = true
     end
 
-    opts.on("--compact", "只整合各文档的「硬约束」小节，输出精简版（推荐注入 CLAUDE.md）") do
+    opts.on("--compact", "只整合各文档的「硬约束」小节，输出精简版（离线/内嵌场景）；对外发布的 CLAUDE.md 请用 --index") do
       options[:compact] = true
     end
 

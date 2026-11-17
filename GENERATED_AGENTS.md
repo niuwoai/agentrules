@@ -19,15 +19,15 @@
 - 规则源文件以 GitHub 默认分支为准；本地存在 agentrules 仓库时优先读取同名本地文件。
 
 ## 按需规则索引
-- [AI 协作红线](https://github.com/xurenlu/agentrules/blob/main/ai-guardrails.md)（`ai-guardrails.md`）：文件编辑方式、破坏性操作确认、需求文本与产品文案边界、界面要求与实现行为分离、共享分支保护和如实汇报
-- [编程通用规范](https://github.com/xurenlu/agentrules/blob/main/programming.md)（`programming.md`）：代码风格、错误处理、测试、版本控制、安全和日志
-- [多端产品设计规范](https://github.com/xurenlu/agentrules/blob/main/design.md)（`design.md`）：新项目启动门禁、界面呈现与实现行为分离、UI 规范方向和多端规范
-- [前端规范](https://github.com/xurenlu/agentrules/blob/main/frontend.md)（`frontend.md`）：TypeScript、React、状态管理、CSS、性能、安全和测试
-- [Go 规范](https://github.com/xurenlu/agentrules/blob/main/go.md)（`go.md`）：Go 项目结构、错误处理、并发、DI、测试、性能和 Go + React embed
-- [Python 规范](https://github.com/xurenlu/agentrules/blob/main/python.md)（`python.md`）：Python 环境、类型、异步、数据库、测试和常用库
-- [数据库迁移规范](https://github.com/xurenlu/agentrules/blob/main/database-migrations.md)（`database-migrations.md`）：迁移版本、建表、索引、启动迁移、回滚和 CI/CD
-- [数据库查询规范](https://github.com/xurenlu/agentrules/blob/main/database-queries.md)（`database-queries.md`）：SQL 编写、索引、查询优化、EXPLAIN 和 ORM
-- [数据库同步规范](https://github.com/xurenlu/agentrules/blob/main/database-sync.md)（`database-sync.md`）：全量、增量、实时同步、一致性、冲突解决和监控
-- [服务部署规范](https://github.com/xurenlu/agentrules/blob/main/deployment.md)（`deployment.md`）：发布检查、迁移、产物备份、健康检查、回滚和 CI/CD
-- [Linux 服务器规范](https://github.com/xurenlu/agentrules/blob/main/linux-server.md)（`linux-server.md`）：安全基线、监控、备份、日志、性能调优、Docker 和应急响应
-- [版本管理规范](https://github.com/xurenlu/agentrules/blob/main/version-control.md)（`version-control.md`）：分支策略、语义化版本、Build 号、CHANGELOG、.gitignore 和 Git 工作流
+- [AI 协作红线](https://github.com/niuwoai/agentrules/blob/main/ai-guardrails.md)（`ai-guardrails.md`）：文件编辑方式、破坏性操作确认、需求文本与产品文案边界、界面要求与实现行为分离、共享分支保护和如实汇报
+- [编程通用规范](https://github.com/niuwoai/agentrules/blob/main/programming.md)（`programming.md`）：代码风格、错误处理、测试、版本控制、安全和日志
+- [多端产品设计规范](https://github.com/niuwoai/agentrules/blob/main/design.md)（`design.md`）：新项目启动门禁、界面呈现与实现行为分离、UI 规范方向和多端规范
+- [前端规范](https://github.com/niuwoai/agentrules/blob/main/frontend.md)（`frontend.md`）：TypeScript、React、状态管理、CSS、性能、安全和测试
+- [Go 规范](https://github.com/niuwoai/agentrules/blob/main/go.md)（`go.md`）：Go 项目结构、错误处理、并发、DI、测试、性能和 Go + React embed
+- [Python 规范](https://github.com/niuwoai/agentrules/blob/main/python.md)（`python.md`）：Python 环境、类型、异步、数据库、测试和常用库
+- [数据库迁移规范](https://github.com/niuwoai/agentrules/blob/main/database-migrations.md)（`database-migrations.md`）：迁移版本、建表、索引、启动迁移、回滚和 CI/CD
+- [数据库查询规范](https://github.com/niuwoai/agentrules/blob/main/database-queries.md)（`database-queries.md`）：SQL 编写、索引、查询优化、EXPLAIN 和 ORM
+- [数据库同步规范](https://github.com/niuwoai/agentrules/blob/main/database-sync.md)（`database-sync.md`）：全量、增量、实时同步、一致性、冲突解决和监控
+- [服务部署规范](https://github.com/niuwoai/agentrules/blob/main/deployment.md)（`deployment.md`）：发布检查、迁移、产物备份、健康检查、回滚和 CI/CD
+- [Linux 服务器规范](https://github.com/niuwoai/agentrules/blob/main/linux-server.md)（`linux-server.md`）：安全基线、监控、备份、日志、性能调优、Docker 和应急响应
+- [版本管理规范](https://github.com/niuwoai/agentrules/blob/main/version-control.md)（`version-control.md`）：分支策略、语义化版本、Build 号、CHANGELOG、.gitignore 和 Git 工作流

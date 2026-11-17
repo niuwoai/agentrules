@@ -73,10 +73,13 @@ class RuleVerifier
   def verify_generated_artifact
     Dir.mktmpdir("agentrules-verify") do |dir|
       expected = File.join(dir, "GENERATED_CLAUDE.md")
-      generator_output("--all", "--compact", "--output", expected, "--force")
-      generated = File.exist?(GENERATED_ARTIFACT) && File.binread(GENERATED_ARTIFACT) == File.binread(expected)
-      header = generated && File.read(GENERATED_ARTIFACT, encoding: "UTF-8").start_with?("<!-- GENERATED FILE — DO NOT EDIT.")
-      record("生成产物同步", generated && header, generated && header ? "GENERATED_CLAUDE.md 与生成器一致，且标明不可直接编辑。" : "请重新生成 GENERATED_CLAUDE.md，且保留生成文件标记。")
+        generator_output("--all", "--index", "--output", expected, "--force")
+        generated = File.exist?(GENERATED_ARTIFACT) && File.binread(GENERATED_ARTIFACT) == File.binread(expected)
+        content = generated ? File.read(GENERATED_ARTIFACT, encoding: "UTF-8") : ""
+        header = content.start_with?("<!-- GENERATED FILE — DO NOT EDIT.")
+        canonical = content.include?("https://github.com/niuwoai/agentrules/blob/main/CLAUDE.md")
+        no_embedded_body = !content.include?("## 硬约束")
+        record("生成产物同步", generated && header && canonical && no_embedded_body, generated && header && canonical && no_embedded_body ? "GENERATED_CLAUDE.md 与生成器一致：概要索引、niuwoai 规范地址、无内嵌硬约束正文。" : "请重新生成 GENERATED_CLAUDE.md（--all --index），并检查规范地址与未内嵌正文。")
     end
   end
 

@@ -2,7 +2,7 @@
 
 这些是我日常工作中积累的最佳实践，写代码/做技术决策时可以参考。
 
-每个主题文档顶部有「**硬约束**」小节——只含 MUST / MUST NOT 的 AI 必守清单；正文是背景、模板和细节，按需阅读。项目级规则可用 `--compact` 只取硬约束层；全局 `AGENTS.md` 推荐用 `--index` 只生成路由索引，避免每轮注入全部正文。
+每个主题文档顶部有「**硬约束**」小节——只含 MUST / MUST NOT 的 AI 必守清单；正文是背景、模板和细节，按需阅读。对外发布的 **`CLAUDE.md`** 为概要索引（含 [规范地址](https://github.com/niuwoai/agentrules/blob/main/CLAUDE.md) 与主题链接），Agent 按任务按需加载 `ai-guardrails.md` 等，避免系统提示过长。本地离线集成可用 `--compact` 内嵌硬约束；`AGENTS.md` 用 `--index` 生成同类索引。
 
 ## 通用
 | 文件 | 内容 |
@@ -40,7 +40,7 @@
 | [scripts/verify_rules.rb](scripts/verify_rules.rb) | 校验规则结构、必选规则、版本一致性、入口文档体量预算、生成产物和嵌套 AGENTS 上溯链，并集成测试项目脚手架的重复执行安全性；输出 JSON + Markdown 报告，加 `--no-report` 则只打印到 stdout 不落盘 |
 | [Rakefile](Rakefile) | 本地验证入口：`rake test`（也是默认任务）执行 `ruby scripts/verify_rules.rb --no-report`，报告只打印到 stdout，不生成 `tmp/` 报告、不改动工作区；校验失败时 rake 以非零退出码结束 |
 | [.github/workflows/verify-rules.yml](.github/workflows/verify-rules.yml) | 在 PR 与分支推送时执行规则校验，并上传报告 |
-| [.github/workflows/release-claude.yml](.github/workflows/release-claude.yml) | 仅对主分支上的版本 tag 自动生成硬约束版 `CLAUDE.md` 与索引版 `AGENTS.md`，并作为 GitHub Release 附件发布 |
+| [.github/workflows/release-claude.yml](.github/workflows/release-claude.yml) | 仅对主分支上的版本 tag 自动生成概要索引版 `CLAUDE.md`（含 niuwoai 规范 URL）与 `AGENTS.md`，并作为 GitHub Release 附件发布 |
 
 ## 本地验证
 
