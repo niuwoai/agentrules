@@ -5,8 +5,8 @@
 > 本节是 AI 必守清单，违反即错误；下文各节是背景、模板和细节，按需阅读。
 
 - **MUST**：每次修改代码后同步更新版本号和 `CHANGELOG.md`
-- **MUST**：版本号格式 `MAJOR.MINOR.BUILD`（如 `1.2.00001`），三段用点分隔
-- **MUST**：BUILD 是单调递增整数，从 1 开始，每次发布 +1，永不重置；如 `1.2.00001` → `1.2.00002` → `1.3.00003`
+- **MUST**：版本号格式 `MAJOR.MINOR.BUILD`（如 `1.2.1`、`0.28.31`），三段用点分隔
+- **MUST**：BUILD 是单调递增整数，从 1 开始，每次发布 +1，永不重置；第三段**禁止**用前导零补齐位数；如 `1.2.1` → `1.2.2` → `1.3.3`
 - **MUST**：功能新增提升 MINOR 或 MAJOR；bugfix 只递增 BUILD，不提升前两段
 - **MUST**：前端与后端版本号保持一致；服务端 API 通过响应 header（如 `X-App-Version`）暴露当前版本
 - **MUST**：用户要求 git 提交时，打 `v{版本号}` tag 并随代码一起推送（远程是 GitHub 时推到 GitHub）
@@ -17,7 +17,7 @@
 - **MUST NOT**：一个 PR 混 feat + fix + refactor
 - **MUST NOT**：改了版本号不写 CHANGELOG，或 CHANGELOG 与代码不同步
 - **MUST**：`PRODUCT_OVERVIEW.md` 与 `ARCHITECTURE.md` 主文档 ≤ 1,000 字符（约 1k tokens），写不下则拆到 `docs/product/`、`docs/architecture/` 等子文档并在主文档保留入口表；`README.md`、`CHANGELOG.md` 等按 `ai-guardrails.md` 通用入口预算维护；`CHANGELOG.md` 只保留最近版本、历史归档到 `docs/changelog/`
-- **MUST**：`当前版本：vMAJOR.MINOR.BUILD`（如 `v1.2.00005`）必须留在 `PRODUCT_OVERVIEW.md` / `ARCHITECTURE.md` 主文档顶部，CI 与校验脚本依赖它，不得随细节下沉到子文档
+- **MUST**：`当前版本：vMAJOR.MINOR.BUILD`（如 `v1.2.5`）必须留在 `PRODUCT_OVERVIEW.md` / `ARCHITECTURE.md` 主文档顶部，CI 与校验脚本依赖它，不得随细节下沉到子文档
 
 ## 分支策略
 
@@ -43,13 +43,13 @@ feature/xxx ───●──●──●──────────
 ```
 feature/<功能名>      # feature/user-auth, feature/payment
 fix/<问题描述>        # fix/login-timeout, fix/typo
-release/<版本号>      # release/v1.2.00007
+release/<版本号>      # release/v1.2.7
 hotfix/<问题描述>     # hotfix/critical-bug
 ```
 
 ## 版本号
 
-格式：`MAJOR.MINOR.BUILD`（如 `1.4.00012`、`2.0.00013`）。前两段表示大版本 / 小版本；第三段 `BUILD` 为发布序号，从 `1` 起每次发布 +1，永不重置（MAJOR/MINOR 升级后仍继续递增）。
+格式：`MAJOR.MINOR.BUILD`（如 `1.4.12`、`2.0.13`、`0.28.31`）。前两段表示大版本 / 小版本；第三段 `BUILD` 为发布序号，从 `1` 起每次发布 +1，永不重置（MAJOR/MINOR 升级后仍继续递增）。
 
 ### 默认约定（业务项目 / 内部项目）
 
@@ -61,15 +61,14 @@ hotfix/<问题描述>     # hotfix/critical-bug
 
 **BUILD 规则：**
 - 从 `1` 开始，每次发布（无论前两段是否变化）+1
-- 永不重置；例：`0.1.00001` → `0.1.00002`（修 bug）→ `0.2.00003`（新功能）
-- 建议固定位宽展示（如 5 位 `00001`），便于排序与对齐 UI；内部记录可用裸整数
-- tag 与对外展示与数字一致：`v1.2.00007`
+- 永不重置；例：`0.1.1` → `0.1.2`（修 bug）→ `0.2.3`（新功能）
+- 第三段按整数书写，**不要**写成 `00031` 等形式；tag 与对外展示一致：`v0.28.31`、`v1.2.7`
 
 ### 已废弃：`0.00.000-rc{xx}` 与 `-rcN`
 
 - **MUST NOT**：新规则库或业务项目再采用 `0.00.000-rc12`、`-rcN` 预发布后缀，或「正式版本 + 独立 rc 号重置」那一套（见本仓库 CHANGELOG 0.26.0 / 0.22.0 之前说明）。
 - **MUST**：一律改用本节 `MAJOR.MINOR.BUILD`；第三段即发布序号，不再单独维护 rc。
-- **迁移**：旧 tag/文档若仍为 `vX.Y.Z-rcN` 或 `vX.Y.Z`，下次发版改为 `vX.Y.00001` 起（或按当前 BUILD 连续性衔接，在 `AGENTS.md` / `CLAUDE.md` 写一句「自 v… 起采用 BUILD 三段式」）。
+- **迁移**：旧 tag/文档若仍为 `vX.Y.Z-rcN`、`vX.Y.Z` 或曾用五位 BUILD（如 `v0.28.00031`），下次发版改为裸整数 BUILD（如 `v0.28.32`）；BUILD 序号与旧 tag 末段数值连续，不得用前导零。
 
 ### 例外：标准 SemVer 项目
 
@@ -84,7 +83,7 @@ hotfix/<问题描述>     # hotfix/critical-bug
 哪套都行，但一个项目只能用一套；项目现状与本规范不一致时，在 `AGENTS.md` / `CLAUDE.md` 里写明采用哪套。
 
 ### 版本号在哪改
-- 完整版本字符串一处为真：`"1.2.00007"`（Go `Version` / 前端 `version` / Python `__version__`）
+- 完整版本字符串一处为真：`"1.2.7"`（Go `Version` / 前端 `version` / Python `__version__`）
 - 多项目仓库：各子项目独立版本号，根目录 CHANGELOG 汇总
 
 ### 每次改动前先想
@@ -110,7 +109,7 @@ hotfix/<问题描述>     # hotfix/critical-bug
 ```markdown
 # Changelog
 
-## [1.2.00007] - 2026-05-27
+## [1.2.7] - 2026-05-27
 
 ### Added
 - 用户注册接口 /api/auth/register
@@ -127,7 +126,7 @@ hotfix/<问题描述>     # hotfix/critical-bug
 
 ---
 
-## [1.1.00003] - 2026-05-20
+## [1.1.3] - 2026-05-20
 
 ### Added
 - 仪表盘页面
@@ -172,7 +171,7 @@ hotfix/<问题描述>     # hotfix/critical-bug
 ```markdown
 # Product Overview
 
-> 最后更新：2026-05-27 | 当前版本：v1.2.00007
+> 最后更新：2026-05-27 | 当前版本：v1.2.7
 
 ## 项目简介
 一句话说清楚这个项目是干什么的。
@@ -265,7 +264,7 @@ hotfix/<问题描述>     # hotfix/critical-bug
 ````markdown
 # Architecture
 
-> 最后更新：2026-05-27 | 当前版本：v1.2.00007
+> 最后更新：2026-05-27 | 当前版本：v1.2.7
 
 ## 架构概览
 一句话说明系统形态与主要边界，例如“React Web 客户端通过 REST API 调用 Go 单体服务，服务使用 PostgreSQL 持久化数据，并接入对象存储处理附件”。
@@ -327,7 +326,7 @@ flowchart LR
 
 # 5. 提交
 git add .
-git commit -m "chore: bump version to v1.2.00008
+git commit -m "chore: bump version to v1.2.8
 
 - Add user registration endpoint
 - Fix token refresh bug"
@@ -338,8 +337,8 @@ git push origin feature/user-auth
 # 6. 提 PR：feature/user-auth → develop
 
 # 7. 合并后打 tag
-git tag -a v1.2.00008 -m "Release v1.2.00008"
-git push origin v1.2.00008
+git tag -a v1.2.8 -m "Release v1.2.8"
+git push origin v1.2.8
 ```
 
 ### Commit Message 规范
@@ -435,12 +434,12 @@ Pods/
 1. git checkout develop && git pull
 2. git checkout -b feature/avatar-upload
 3. 开发...
-4. 改版本号：v1.2.00008 → v1.3.00009（新功能，MINOR + BUILD）
+4. 改版本号：v1.2.8 → v1.3.9（新功能，MINOR + BUILD）
 5. 更新 CHANGELOG.md
 6. 更新 PRODUCT_OVERVIEW.md（接口、功能列表）
 7. 如果影响服务边界、存储、接口或部署，更新 ARCHITECTURE.md
 8. git commit -m "feat(avatar): add avatar upload endpoint"
 9. git push origin feature/avatar-upload
 10. PR: feature/avatar-upload → develop
-11. 合并后 git tag v1.3.00009 && git push --tags
+11. 合并后 git tag v1.3.9 && git push --tags
 ```
