@@ -20,6 +20,24 @@
 - **最低必读（涉及改代码时）**：先读 `ai-guardrails.md`、`programming.md`；提交、发版、打 tag 再读 `version-control.md`；UI 相关再读 `design.md` / `frontend.md`。
 - 不得输出或提交密钥、Token、凭据、个人隐私数据。
 
+## 始终遵守（精简）
+
+下文是跨任务底线；细则与例外见按需规则索引。
+
+**协作与安全**
+- 改文件优先 patch/编辑工具，禁止用 shell 覆写；破坏性操作先确认；禁止 force-push 共享分支；测试失败如实报，不宣称已完成。
+- 不输出/提交密钥与凭据；不探测读取私钥、`.env`、token 文件。
+- 不改 `GENERATED FILE — DO NOT EDIT` 产物，改源文件后重新生成；改动范围与任务一致。
+
+**需求与界面**
+- 不要把需求、验收、Prompt、实现参数当用户界面文案；实现行为由代码完成，界面少字、可点即懂。
+- 用户可见文案走 i18n；新项目先落启动文档再大规模编码；关键决策写仓库文档，不单靠聊天记录。
+
+**工程**
+- SQL 参数化；核心逻辑有测；错误带上下文；单文件超过 3000 行必须拆分。
+- 发版：`MAJOR.MINOR.BUILD`，每次发版 BUILD +1；改代码同步 CHANGELOG；用户要求提交时打 tag 并推送。
+- 入口文档控体量：概览类 ≤300 行且 ≤20k 字符，产品/架构主文 ≤1k 字符，超限索引化到 `docs/`。
+
 ## 按需规则索引
 - [AI 协作红线](https://github.com/niuwoai/agentrules/blob/main/ai-guardrails.md)（`ai-guardrails.md`）：文件编辑方式、破坏性操作确认、需求文本与产品文案边界、界面要求与实现行为分离、共享分支保护和如实汇报
 - [编程通用规范](https://github.com/niuwoai/agentrules/blob/main/programming.md)（`programming.md`）：代码风格、错误处理、测试、版本控制、安全和日志
