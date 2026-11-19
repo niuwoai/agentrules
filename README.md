@@ -9,6 +9,7 @@
 |------|------|
 | [ai-guardrails.md](ai-guardrails.md) | AI 协作红线：文件编辑方式、破坏性操作确认、共享分支保护、如实汇报、需求文本与产品文案边界、界面要求与实现行为分离、长文档索引化与上下文预算 |
 | [programming.md](programming.md) | 编程：代码风格、错误处理、测试、设计原则、安全、日志 |
+| [delivery.md](delivery.md) | 高频交付：任务与行为契约、worktree 所有权、分层验证、并发边界、事故反馈 |
 | [design.md](design.md) | 多端设计：新项目启动门禁、第一轮确认清单、启动文档模板、UI 体系、多端规范 |
 | [version-control.md](version-control.md) | 版本管理：分支策略、语义化版本、CHANGELOG、Product Overview、Architecture 文档、Git 工作流 |
 | [deployment.md](deployment.md) | 服务部署：发布检查、迁移、产物备份、健康检查、回滚、CI/CD |
@@ -38,10 +39,12 @@
 | [scripts/generate_claude_md.rb](scripts/generate_claude_md.rb) | 交互选择规则文档并生成 AI 协作规则；`--compact` 输出硬约束精简版，`--index` 输出不含主题正文的按需索引版 |
 | [scripts/generate_project_agents.rb](scripts/generate_project_agents.rb) | 扫描目标项目并生成分层 `AGENTS.md`：支持通用、React、Go API、Go + React 模板；已有文件一律跳过，不覆盖人工规则 |
 | [templates/agents/](templates/agents/) | 根目录与模块级 `AGENTS.md` 的可维护 ERB 模板 |
+| [templates/delivery/](templates/delivery/) | 可选任务、子系统、经验和发布契约模板，复用既有 Issue / PR / 文档即可 |
+| [tests/release_workflow_test.rb](tests/release_workflow_test.rb) | 隔离执行实际附件发布步骤，使用假的 gh 覆盖重试、内容冲突、部分上传和网络失败，不访问 GitHub |
 | [scripts/verify_rules.rb](scripts/verify_rules.rb) | 校验规则结构、必选规则、版本一致性、入口文档体量预算、生成产物和嵌套 AGENTS 上溯链，并集成测试项目脚手架的重复执行安全性；输出 JSON + Markdown 报告，加 `--no-report` 则只打印到 stdout 不落盘 |
 | [Rakefile](Rakefile) | 本地验证入口：`rake test`（也是默认任务）执行 `ruby scripts/verify_rules.rb --no-report`，报告只打印到 stdout，不生成 `tmp/` 报告、不改动工作区；校验失败时 rake 以非零退出码结束 |
-| [.github/workflows/verify-rules.yml](.github/workflows/verify-rules.yml) | 在 PR 与分支推送时执行规则校验，并上传报告 |
-| [.github/workflows/release-claude.yml](.github/workflows/release-claude.yml) | 仅对主分支上的版本 tag 自动生成概要索引版 `CLAUDE.md`（含 niuwoai 规范 URL）与 `AGENTS.md`，并作为 GitHub Release 附件发布 |
+| [.github/workflows/verify-rules.yml](.github/workflows/verify-rules.yml) | 在 PR、合并队列与分支推送时执行规则校验，并上传报告 |
+| [.github/workflows/release-claude.yml](.github/workflows/release-claude.yml) | 校验默认分支 tag 的实际 SHA，草稿准备 `CLAUDE.md` / `AGENTS.md` 并下载核对后公开；同 tag 重试互斥、附件不覆盖，不推进共享 Latest |
 
 ## 本地验证
 
@@ -60,6 +63,20 @@ ruby scripts/generate_claude_md.rb --all --index --output AGENTS.md --force
 索引版只保留使用说明、优先级和主题链接。AI 应按任务读取直接相关的源规则，不应在开工时批量加载整个规则库。
 需要生成离线目录内的相对链接时，增加 `--index-base .`。
 
+## 支持每天 30–50 次小步发版
+
+从 [delivery.md](delivery.md) 开始，为项目定义发布单元与 [发布契约](templates/delivery/release-contract.md)：开发、审查和打包可并行，版本统一分配，共享目标的切换有序且拒绝过期任务。具体版本、产物、部署与迁移要求分别由对应主题维护。
+
+先落地一个可验证、可恢复的发布单元，再测队列等待、检查耗时、发布失败 / 回滚率，逐步增加并行度。30–50 次是容量目标，本规则库尚未提供业务流水线的吞吐实测，也不提供通用发布调度器。
+
+交付画像可叠加技术画像，不必在所有项目常驻加载完整主题：
+
+```bash
+ruby scripts/generate_claude_md.rb --profile go-api --profile delivery --index --output AGENTS.md
+```
+
+[四类模板](templates/delivery/README.md) 按需取用；简单任务写在现有 Issue / PR 即可，不强制每次交付新建文档。Magpie 的技术栈、固定产物数、复盘天数和业务规则不迁入通用要求。
+
 ## 为项目生成分层 AGENTS.md
 
 先预览生成计划：
@@ -74,6 +91,12 @@ ruby scripts/generate_project_agents.rb --target /path/to/project --dry-run
 ruby scripts/generate_project_agents.rb --target /path/to/project
 ```
 
-脚本会自动识别通用、React、Go API 或 Go + React 项目，也可用 `--template` 明确指定。它只创建缺失的 `AGENTS.md`，已有文件会报告为 `skipped`；可通过 `--json-output` 和 `--markdown-output` 保存审计报告。
+脚本会自动识别通用、React、Go API 或 Go + React 项目，也可用 `--template` 明确指定。根规则默认 `--rules-mode index`；离线使用可选 `--rules-mode compact`。使用可重复的 `--profile` 叠加画像，例如：
+
+```bash
+ruby scripts/generate_project_agents.rb --target /path/to/project --profile delivery --dry-run
+```
+
+脚本只创建缺失的 `AGENTS.md`，已有根 / 模块文件均报告为 `skipped`；不会创建交付模板或覆盖已有规则。已有项目升级需审阅后合入索引 / 规则补丁，重新运行脚手架不会自动更新旧文件。可通过 `--json-output` 和 `--markdown-output` 保存审计报告。
 
 > 这些不是教条，是我踩过坑之后总结的。有不同意见随时改。

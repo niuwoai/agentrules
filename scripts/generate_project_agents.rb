@@ -26,22 +26,26 @@ TEMPLATE_PROFILES = {
 }.freeze
 
 class ProjectAgentGenerator
-  def initialize(target:, template_name:, max_depth:, dry_run:)
+  def initialize(target:, template_name:, profiles:, rules_mode:, max_depth:, dry_run:)
     @target = File.expand_path(target)
     raise ArgumentError, "目标项目目录不存在：#{@target}" unless Dir.exist?(@target)
 
     @max_depth = max_depth
     @template_name = template_name == "auto" ? detect_template : template_name
+    @profiles = ([TEMPLATE_PROFILES.fetch(@template_name)] + profiles).uniq
+    @rules_mode = rules_mode
     @dry_run = dry_run
     @actions = []
   end
 
   def run
+    # 先验证全部画像和模式，避免非法参数在已有根规则时被跳过或留下部分文件。
+    @rules_fragment = build_rules_fragment
     directories = [@target] + discover_module_directories
     directories.each_with_index do |directory, index|
       create_agent(directory, index.zero?, directories)
     end
-    { passed: true, target: @target, template: @template_name, dry_run: @dry_run, actions: @actions }
+    { passed: true, target: @target, template: @template_name, profiles: @profiles, rules_mode: @rules_mode, dry_run: @dry_run, actions: @actions }
   end
 
   private
@@ -83,7 +87,7 @@ class ProjectAgentGenerator
       project_name: File.basename(directory),
       template_name: @template_name,
       commands_markdown: markdown_list(commands_for(directory)),
-      rules_fragment: rules_fragment
+      rules_fragment: @rules_fragment
     }
     render_template(ROOT_TEMPLATE, context)
   end
@@ -146,10 +150,13 @@ class ProjectAgentGenerator
     rules.empty? ? ["遵守父级规则，只在本文件记录本模块确有差异的约束。"] : rules
   end
 
-  def rules_fragment
-    profile = TEMPLATE_PROFILES.fetch(@template_name)
-    output, status = Open3.capture2e(RbConfig.ruby, RULE_GENERATOR, "--profile", profile, "--compact", "--fragment", "--dry-run")
-    raise "规则基线生成失败：#{output}" unless status.success?
+  def build_rules_fragment
+    arguments = @profiles.flat_map { |profile| ["--profile", profile] }
+    output, status = Open3.capture2e(
+      RbConfig.ruby, RULE_GENERATOR, *arguments,
+      "--#{@rules_mode}", "--output", "AGENTS.md", "--fragment", "--dry-run"
+    )
+    raise ArgumentError, "规则基线生成失败：#{output.strip}" unless status.success?
 
     output.strip
   end
@@ -216,17 +223,20 @@ class ProjectAgentGenerator
 end
 
 def parse_options(argv)
-  options = { target: Dir.pwd, template_name: "auto", max_depth: 3, dry_run: false, json_output: nil, markdown_output: nil }
+  options = { target: Dir.pwd, template_name: "auto", profiles: [], rules_mode: "index", max_depth: 3, dry_run: false, json_output: nil, markdown_output: nil }
   OptionParser.new do |opts|
     opts.banner = "用法：ruby scripts/generate_project_agents.rb [options]"
     opts.on("--target PATH", "目标项目目录，默认当前目录") { |value| options[:target] = value }
     opts.on("--template NAME", "模板：auto, #{TEMPLATE_PROFILES.keys.join(', ')}") { |value| options[:template_name] = value }
+    opts.on("--profile NAME", "叠加规则画像，可重复，如 delivery") { |value| options[:profiles] << value }
+    opts.on("--rules-mode MODE", "规则模式：index（默认）或 compact") { |value| options[:rules_mode] = value }
     opts.on("--max-depth N", Integer, "扫描模块最大深度，默认 3") { |value| options[:max_depth] = value }
-    opts.on("--dry-run", "只展示计划，不写入 AGENTS.md") { options[:dry_run] = true }
+    opts.on("--dry-run", "只展示计划，不写入 AGENTS.md 或报告") { options[:dry_run] = true }
     opts.on("--json-output PATH", "可选 JSON 报告路径") { |value| options[:json_output] = value }
     opts.on("--markdown-output PATH", "可选 Markdown 报告路径") { |value| options[:markdown_output] = value }
   end.parse!(argv)
   abort("未知模板：#{options[:template_name]}") unless options[:template_name] == "auto" || TEMPLATE_PROFILES.key?(options[:template_name])
+  abort("未知规则模式：#{options[:rules_mode]}。可选：index, compact") unless %w[index compact].include?(options[:rules_mode])
   abort("--max-depth 不能小于 0") if options[:max_depth].negative?
   options
 end
@@ -245,13 +255,21 @@ def write_optional_report(path, content)
   File.write(absolute, content, encoding: "UTF-8")
 end
 
-options = parse_options(ARGV)
-result = ProjectAgentGenerator.new(
-  target: options.fetch(:target),
-  template_name: options.fetch(:template_name),
-  max_depth: options.fetch(:max_depth),
-  dry_run: options.fetch(:dry_run)
-).run
-write_optional_report(options[:json_output], "#{JSON.pretty_generate(result)}\n")
-write_optional_report(options[:markdown_output], markdown_report(result))
-puts JSON.generate(result)
+begin
+  options = parse_options(ARGV)
+  result = ProjectAgentGenerator.new(
+    target: options.fetch(:target),
+    template_name: options.fetch(:template_name),
+    profiles: options.fetch(:profiles),
+    rules_mode: options.fetch(:rules_mode),
+    max_depth: options.fetch(:max_depth),
+    dry_run: options.fetch(:dry_run)
+  ).run
+  unless options.fetch(:dry_run)
+    write_optional_report(options[:json_output], "#{JSON.pretty_generate(result)}\n")
+    write_optional_report(options[:markdown_output], markdown_report(result))
+  end
+  puts JSON.generate(result)
+rescue ArgumentError, OptionParser::ParseError => e
+  abort(e.message)
+end

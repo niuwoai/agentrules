@@ -84,6 +84,13 @@ DOCS = [
     tags: %w[database sync backend service]
   ),
   RuleDoc.new(
+    key: "delivery",
+    file: "delivery.md",
+    title: "高频交付与并行协作",
+    summary: "任务与工作区所有权、行为契约、集成证据、分层验证和事故反馈",
+    tags: %w[delivery collaboration]
+  ),
+  RuleDoc.new(
     key: "deployment",
     file: "deployment.md",
     title: "服务部署规范",
@@ -143,6 +150,10 @@ PROFILES = {
     name: "数据库同步 / ETL",
     docs: %w[programming database-sync database-queries database-migrations deployment version-control]
   },
+  "delivery" => {
+    name: "高频交付与并行协作（可叠加）",
+    docs: %w[delivery deployment version-control]
+  },
   "full" => {
     name: "完整规则集",
     docs: DOCS.map(&:key)
@@ -181,11 +192,11 @@ class RuleSelector
 
   def docs_by_keys(keys)
     normalized = keys.map(&:to_s).flat_map { |item| item.split(",") }.map(&:strip).reject(&:empty?)
-    docs = normalized.uniq.map do |key|
+    docs = normalized.map do |key|
       DOCS.find { |doc| doc.key == key || doc.file == key } ||
         abort("未知文档：#{key}。可选：#{DOCS.map(&:key).join(", ")}")
     end
-    ensure_required_docs(docs)
+    ensure_required_docs(docs.uniq(&:key))
   end
 
   def ensure_required_docs(docs)
@@ -251,12 +262,14 @@ class RulesBundleBuilder
     @options = options
   end
 
-    def build
-      parts = [instructions]
+  def build
+    parts = []
+    unless @options[:fragment]
+      parts.concat([front_matter, instructions])
       parts << claude_essentials if claude_index_output?
-      parts << source_index
-      parts << body unless @options[:index]
-    parts.unshift(front_matter) unless @options[:fragment]
+    end
+    parts << source_index
+    parts << body unless @options[:index]
     parts.join("\n\n")
   end
 
@@ -266,33 +279,33 @@ class RulesBundleBuilder
     output_document_name(@options[:output])
   end
 
-    def front_matter
-      profile_names = Array(@options[:profiles]).map { |key| PROFILES.fetch(key, { name: key })[:name] }
-      profile_line = profile_names.empty? ? "自定义选择" : profile_names.join("、")
-      mode_line = if @options[:index]
-                    if claude_index_output?
-                      "\n> 模式：对外发布概要索引（--index），规则正文在 GitHub 按需读取，不内嵌于本文件。"
-                    else
-                      "\n> 模式：按需读取索引版（--index），不内嵌主题规则正文。"
-                    end
-                  elsif @options[:compact]
-                    "\n> 模式：硬约束精简版（--compact），完整背景与细节见规则库原文。"
+  def front_matter
+    profile_names = Array(@options[:profiles]).map { |key| PROFILES.fetch(key)[:name] }
+    profile_line = profile_names.empty? ? "自定义选择" : profile_names.join("、")
+    mode_line = if @options[:index]
+                  if claude_index_output?
+                    "\n> 模式：对外发布概要索引（--index），规则正文在 GitHub 按需读取，不内嵌于本文件。"
                   else
-                    ""
+                    "\n> 模式：按需读取索引版（--index），不内嵌主题规则正文。"
                   end
-      canonical_line = claude_index_output? ? "\n> 规范地址：`#{RULES_CANONICAL_URL}`" : ""
+                elsif @options[:compact]
+                  "\n> 模式：硬约束精简版（--compact），完整背景与细节见规则库原文。"
+                else
+                  ""
+                end
+    canonical_line = claude_index_output? ? "\n> 规范地址：`#{RULES_CANONICAL_URL}`" : ""
 
-      <<~MARKDOWN.strip
-        <!-- GENERATED FILE — DO NOT EDIT.
-             Source: Willdeep rule documents and scripts/generate_claude_md.rb -->
+    <<~MARKDOWN.strip
+      <!-- GENERATED FILE — DO NOT EDIT.
+           Source: Willdeep rule documents and scripts/generate_claude_md.rb -->
 
-        # #{document_name}
+      # #{document_name}
 
-        > 由 `scripts/generate_claude_md.rb` 生成；请修改规则源文件后重新生成。
-        > 规则画像：#{profile_line}
-        > 生成来源：Willdeep 规则库。#{canonical_line}#{mode_line}
-      MARKDOWN
-    end
+      > 由 `scripts/generate_claude_md.rb` 生成；请修改规则源文件后重新生成。
+      > 规则画像：#{profile_line}
+      > 生成来源：Willdeep 规则库。#{canonical_line}#{mode_line}
+    MARKDOWN
+  end
 
   def instructions
     return index_instructions if @options[:index]
@@ -300,84 +313,82 @@ class RulesBundleBuilder
     <<~MARKDOWN.strip
       ## 使用说明
 
-      - 本文件是面向 Claude / Codex / 其他 AI 编程助手的整合规则入口。
-      - 若本文件与项目内更具体、更晚出现的 `AGENTS.md`、`CLAUDE.md` 或用户指令冲突，以更具体、更晚出现的指令为准。
-      - AI 开工前先判断当前仓库是新项目、半成品还是既有项目迭代；判断不清时按新项目处理。
-      - 新项目或规则缺失时，先生成/更新 `AGENTS.md`、`CLAUDE.md`、`PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md` 或等价文档，写清产品定义、技术栈、模块边界、数据流、设计规范、UI token、多语言计划、版本和验收标准。
-      - 新项目必须创建根目录 `ARCHITECTURE.md`；技术栈、模块边界、服务通信、数据存储、接口协议、认证授权、部署拓扑或关键集成发生变化时，必须同步更新。
-      - 新项目关键决策应沉淀到 `docs/product-brief.md`、`ARCHITECTURE.md`、`docs/design-system.md`、`docs/ui-tokens.md`、`docs/i18n.md` 和 `docs/decisions/`，不要只依赖 memory 或聊天记录。
-      - 新项目第一轮沟通只问 6-8 个高价值主题：定位、用户场景、首版范围、平台设备、设计方向、多语言、数据库/数据权限、交付验收；能从仓库判断的内容写成默认假设。
-      - 架构、数据库、部署、测试、权限等工程决策先给最佳实践建议，再让用户确认；不要把选型责任全丢给用户。
-      - UI 规范按平台和应用类型先给 2-4 套推荐方向，再让用户选择；选定后沉淀到 `docs/design-system.md`、`docs/ui-tokens.md` 等仓库文档。
-      - 架构、设计规范、数据库、多语言、部署和验收等关键决策必须落入仓库文档；memory 和聊天记录不能作为唯一事实来源。
-      - 涉及界面项目时，先按设计规范与用户确认平台、用户、核心场景、视觉气质、信息密度、UI 体系和计划支持语言，再进入实现。
-      - 修改代码后必须同步版本号、CHANGELOG 和必要的产品概览文档。
-      - 不得输出或提交密钥、Token、凭据、个人隐私数据。
+      - 本文件是面向 AI 编程助手的整合规则入口；背景与示例按任务需要读取源文档。
+      - 指令优先级：系统 / 开发者 / 用户指令 > 目标仓库内更具体的 `AGENTS.md` / `CLAUDE.md` > 本入口。
+      - 修改前核对项目阶段、本地规则、工作区状态和既有实现，保留其他任务的现场。
+      - 新项目启动与界面设计按 `programming.md` / `design.md` 执行；产品、架构和开发说明仅在任务相关时读取。
+      - 代码变更记录独立变更片段；发布阶段统一分配版本、归并 CHANGELOG 并同步相关版本文档，见 `version-control.md`。
+      - 提交不等于发布；tag、推送与部署按用户授权及项目发布策略执行。并行协作见 `delivery.md`，发布切换见 `deployment.md`。
+      - 关键行为与决策更新所属仓库文档，不只保留在聊天记录；不得输出或提交密钥、Token、凭据、个人隐私数据。
     MARKDOWN
   end
 
-    def index_instructions
-      if claude_index_output?
-        base = @options[:index_base].to_s.sub(%r{/\z}, "")
-        return <<~MARKDOWN.strip
-          ## 使用说明
-
-          - **本文件是概要索引**，不把各主题「硬约束」正文塞进系统提示；保持短，避免上下文膨胀。
-          - **规范全集地址**：#{RULES_CANONICAL_URL}（与本文件同源，随仓库发布更新）。
-          - **按需加载主题规则**：仅当任务命中时，再读取下方链接对应文件；不要因看到文件名列表就一次性拉取全部规则。
-          - **URL 推导**：主题规则默认位于同一仓库 `main` 分支根目录，模式为 `#{base}/<文件名>`。例如 `ai-guardrails.md` → `#{base}/ai-guardrails.md`；索引未列出的其它 `.md` 规则（若存在）按同模式推导，仅在与任务相关时读取。
-          - **本地优先**：若工作区已克隆 [niuwoai/agentrules](https://github.com/niuwoai/agentrules) 或已 vendor 同名文件，优先读本地文件，与远程内容冲突时以**目标业务仓库**内更具体的 `AGENTS.md` / `CLAUDE.md` 为准。
-          - **优先级**：系统 / 开发者 / 用户指令 > 目标仓库内更具体的 `AGENTS.md` / `CLAUDE.md` > 本索引。
-          - **最低必读（涉及改代码时）**：先读 `ai-guardrails.md`、`programming.md`；提交、发版、打 tag 再读 `version-control.md`；UI 相关再读 `design.md` / `frontend.md`。
-          - 不得输出或提交密钥、Token、凭据、个人隐私数据。
-        MARKDOWN
-      end
-
-      <<~MARKDOWN.strip
+  def index_instructions
+    if claude_index_output?
+      base = @options[:index_base].to_s.sub(%r{/\z}, "")
+      return <<~MARKDOWN.strip
         ## 使用说明
 
-        - 本文件是规则索引，不内嵌主题规则正文；不要因为看到索引就一次性读取全部规则。
-        - 指令优先级：系统 / 开发者 / 用户指令 > 目标仓库内更具体的 `AGENTS.md` / `CLAUDE.md` > 本索引。
-        - 开工前根据任务类型，只读取下方索引中直接相关的规则文件；任务范围扩大时再补读。
-        - 修改任何文件前先检查目标仓库的本地规则、工作区状态和既有实现，保留用户已有改动。
-        - 涉及代码时至少读取 `ai-guardrails.md`、`programming.md`；涉及提交、版本或发布时再读取 `version-control.md`。
-        - 不得输出或提交密钥、Token、凭据、个人隐私数据；疑似敏感信息先停止扩散并脱敏处理。
-        - 规则源文件以 GitHub 默认分支为准；本地存在 agentrules 仓库时优先读取同名本地文件。
+        - **本文件是概要索引**，不把各主题「硬约束」正文塞进系统提示；保持短，避免上下文膨胀。
+        - **规范全集地址**：#{RULES_CANONICAL_URL}（与本文件同源，随仓库发布更新）。
+        - **按需加载主题规则**：仅当任务命中时，再读取下方链接对应文件；不要因看到文件名列表就一次性拉取全部规则。
+        - **URL 推导**：主题规则默认位于同一仓库 `main` 分支根目录，模式为 `#{base}/<文件名>`；索引未列出的主题也仅在任务相关时读取。
+        - **本地优先**：工作区已克隆 agentrules 或已 vendor 同名文件时优先读本地文件。
+        - **优先级**：系统 / 开发者 / 用户指令 > 目标仓库内更具体的 `AGENTS.md` / `CLAUDE.md` > 本索引。
+        - **按任务读取**：改代码先读 `ai-guardrails.md`、`programming.md`；提交或版本读 `version-control.md`；并行协作或交付读 `delivery.md`；发布读 `deployment.md`；UI 读 `design.md` / `frontend.md`。
+        - 不得输出或提交密钥、Token、凭据、个人隐私数据。
       MARKDOWN
     end
 
-      def claude_index_output?
-        return false unless @options[:index]
+    <<~MARKDOWN.strip
+      ## 使用说明
 
-        base = File.basename(@options[:output].to_s)
-        base.casecmp?(DEFAULT_OUTPUT) || base.casecmp?("GENERATED_CLAUDE.md")
-      end
+      - 本文件是规则索引，不内嵌主题规则正文；不要因为看到索引就一次性读取全部规则。
+      - 指令优先级：系统 / 开发者 / 用户指令 > 目标仓库内更具体的 `AGENTS.md` / `CLAUDE.md` > 本索引。
+      - 开工前只读取与任务直接相关的规则；任务范围扩大时再补读。
+      - 修改前检查本地规则、工作区状态和既有实现，保留用户已有改动。
+      - 改代码先读 `ai-guardrails.md`、`programming.md`；提交或版本读 `version-control.md`；并行协作或交付读 `delivery.md`；发布读 `deployment.md`；UI 读 `design.md` / `frontend.md`。
+      - 不得输出或提交密钥、Token、凭据、个人隐私数据；疑似敏感信息先停止扩散并脱敏处理。
+      - 本地存在 agentrules 或 vendor 规则时优先读取同名文件；否则按索引链接读取 GitHub 默认分支。
+    MARKDOWN
+  end
 
-      def claude_essentials
-        <<~MARKDOWN.strip
-          ## 始终遵守（精简）
+  def claude_index_output?
+    return false unless @options[:index]
 
-          下文是跨任务底线；细则与例外见按需规则索引。
+    base = File.basename(@options[:output].to_s)
+    base.casecmp?(DEFAULT_OUTPUT) || base.casecmp?("GENERATED_CLAUDE.md")
+  end
 
-          **协作与安全**
-          - 改文件优先 patch/编辑工具，禁止用 shell 覆写；破坏性操作先确认；禁止 force-push 共享分支；测试失败如实报，不宣称已完成。
-          - 不输出/提交密钥与凭据；不探测读取私钥、`.env`、token 文件。
-          - 不改 `GENERATED FILE — DO NOT EDIT` 产物，改源文件后重新生成；改动范围与任务一致。
+  def claude_essentials
+    <<~MARKDOWN.strip
+      ## 始终遵守（精简）
 
-          **需求与界面**
-          - 不要把需求、验收、Prompt、实现参数当用户界面文案；实现行为由代码完成，界面少字、可点即懂。
-          - 用户可见文案走 i18n；新项目先落启动文档再大规模编码；关键决策写仓库文档，不单靠聊天记录。
+      下文是跨任务底线；细则与例外见按需规则索引。
 
-            **工程**
-            - SQL 参数化；核心逻辑有测；错误带上下文；单文件超过 3000 行必须拆分。
-            - 发版：`MAJOR.MINOR.BUILD`，每次发版 BUILD +1；改代码同步 CHANGELOG；用户要求提交时打 tag 并推送。
-            - 入口文档控体量：概览类 ≤300 行且 ≤20k 字符，产品/架构主文 ≤1k 字符，超限索引化到 `docs/`。
-            - 有 Schema 变更须走迁移：`up`/`down` 成对，提供 `migrate up|down|status`；`down` 须验证，prod 回滚谨慎（见 `database-migrations.md`）。
-            - 业务代码仓库维护 `README.md`、`CHANGELOG.md`、`PRODUCT_OVERVIEW.md`、`ARCHITECTURE.md`（或等价文档）；缺则新建，有架构/产品变化时同步更新。**规则库仓库（仅 Markdown 规则与工具链）为例外**，不强制四文档门禁，以 README、CHANGELOG 与校验为准。
-          MARKDOWN
-      end
+      **协作与安全**
 
-    def source_index
+      - 改文件优先 patch/编辑工具，禁止用 shell 覆写；破坏性操作先确认；禁止 force-push 共享分支；测试失败如实报，不宣称已完成。
+      - 不输出/提交密钥与凭据；不探测读取私钥、`.env`、token 文件。
+      - 不改 `GENERATED FILE — DO NOT EDIT` 产物，改源文件后重新生成；改动范围与任务一致。
+
+      **需求与界面**
+
+      - 不要把需求、验收、Prompt、实现参数当用户界面文案；实现行为由代码完成，界面少字、可点即懂。
+      - 用户可见文案走 i18n；新项目先落启动文档再大规模编码；关键决策写仓库文档，不单靠聊天记录。
+
+      **工程**
+
+      - SQL 参数化；核心逻辑有测；错误带上下文；单文件超过 3000 行必须拆分。
+      - 开发记录独立变更片段；发布阶段统一分配版本、归并 CHANGELOG 与版本文档。提交不等于发布，tag / 推送按授权执行，见 `version-control.md`。
+      - 并行任务隔离工作区并明确所有权；验证证据关联当前候选，见 `delivery.md`。
+      - 入口文档控体量：概览类 ≤300 行且 ≤20k 字符，产品/架构主文 ≤1k 字符，超限索引化到 `docs/`。
+      - Schema 迁移与回滚按 `database-migrations.md`；发布前置条件与流量切换按 `deployment.md`。
+      - 业务代码仓库维护 README、CHANGELOG、产品与架构入口；规则库仓库不强制业务四文档门禁，以 README、CHANGELOG 与校验为准，见 `version-control.md`。
+    MARKDOWN
+  end
+
+  def source_index
     return embedded_source_index unless @options[:index]
 
     index_base = @options[:index_base].to_s.sub(%r{/\z}, "")
@@ -395,6 +406,10 @@ class RulesBundleBuilder
   def body
     @docs.map do |doc|
       content = doc_content(doc)
+      if @options[:compact]
+        next ["# #{doc.title}", "> 来源：`#{doc.file}`", content].join("\n")
+      end
+
       <<~MARKDOWN.strip
         ---
 
@@ -499,7 +514,7 @@ def parse_options(argv)
       options[:catalog_json] = true
     end
 
-    opts.on("--fragment", "仅输出规则正文片段，供 AGENTS.md 等模板嵌入") do
+    opts.on("--fragment", "仅输出索引与所选正文（--index 时只有索引），供模板嵌入") do
       options[:fragment] = true
     end
 
@@ -511,6 +526,8 @@ def parse_options(argv)
 
   parser.parse!(argv)
   abort("--compact 与 --index 不能同时使用。") if options[:compact] && options[:index]
+  unknown = options[:profiles].reject { |profile| PROFILES.key?(profile) }
+  abort("未知画像：#{unknown.join(', ')}。可选：#{PROFILES.keys.join(', ')}") unless unknown.empty?
   options
 rescue OptionParser::ParseError => e
   warn e.message
