@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.28.34] - 2026-03-22
+
+### Added
+- `generate_claude_md.rb` / `CLAUDE.md` / `GENERATED_CLAUDE.md`：「始终遵守」增补两条规则：文档与实现同步、develop 分支优先。
+
+### Verification
+- `rake test`：PASS
+
 ## [0.28.33] - 2026-03-22
 
 ### Changed
