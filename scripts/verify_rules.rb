@@ -76,16 +76,20 @@ class RuleVerifier
 
   def verify_generator_contracts(catalog)
     delivery = catalog.fetch("docs").find { |doc| doc.fetch("key") == "delivery" }
+    requirements = catalog.fetch("docs").find { |doc| doc.fetch("key") == "requirements" }
     required = catalog.fetch("docs").select { |doc| doc.fetch("tags").include?("required") }.map { |doc| doc.fetch("key") }
     profile = catalog.fetch("profiles").fetch("delivery", {}).fetch("docs", [])
     passed = delivery && delivery.fetch("file") == "delivery.md" &&
-      required.sort == %w[ai-guardrails programming version-control] && profile == %w[delivery deployment version-control]
-    record("delivery 可选目录", passed, "delivery 应为可选主题，画像仅叠加 delivery / deployment / version-control；required 保持原有三项底线。")
+      requirements && requirements.fetch("file") == "requirements.md" &&
+      required.sort == %w[ai-guardrails programming version-control] && profile == %w[requirements delivery deployment version-control]
+    record("delivery 与需求可选目录", passed, "交付画像叠加 requirements / delivery / deployment / version-control；required 保持原有三项底线。")
 
     selections = [
       [%w[--profile generic --docs programming.md], %w[programming.md design.md version-control.md ai-guardrails.md]],
-      [%w[--profile generic --profile delivery --profile delivery --docs programming.md,delivery,delivery.md],
-       %w[programming.md design.md version-control.md delivery.md deployment.md ai-guardrails.md]]
+      [%w[--profile generic --docs requirements,requirements.md],
+       %w[programming.md design.md version-control.md requirements.md ai-guardrails.md]],
+      [%w[--profile generic --profile delivery --profile delivery --docs programming.md,requirements.md,delivery,delivery.md],
+       %w[programming.md design.md version-control.md requirements.md delivery.md deployment.md ai-guardrails.md]]
     ]
     errors = selections.map do |arguments, expected|
       files = indexed_files(generator_output(*arguments, "--index", "--fragment", "--dry-run"))
@@ -98,7 +102,22 @@ class RuleVerifier
     end
     record("画像叠加与别名去重", errors.empty?, errors.empty? ? "技术画像可叠加 delivery；key / 文件别名与重复画像按主题去重；--all / full 覆盖全部主题。" : errors.join("；"))
     verify_output_modes(catalog)
+    verify_requirement_loading
     verify_compact_constraints(catalog)
+  end
+
+  def verify_requirement_loading
+    errors = []
+    %w[CLAUDE.md AGENTS.md].each do |name|
+      [[], ["--compact"], ["--index"]].each do |mode|
+        output = generator_output("--profile", "generic", "--output", name, *mode, "--dry-run")
+        instructions = output.split(/^## (?:本次整合文档|按需规则索引)$/, 2).first
+        next if instructions.include?("`requirements.md`") && instructions.include?("需求") && instructions.include?("验收")
+
+        errors << "#{name} #{mode.empty? ? 'full' : mode.first} 缺少需求读取指令"
+      end
+    end
+    record("需求主题按需读取", errors.empty?, errors.empty? ? "CLAUDE / AGENTS 的 full、compact、index 入口均说明需求与验收读取 requirements.md，不要求加入所有技术画像。" : errors.join("；"))
   end
 
   def verify_compact_constraints(catalog)
@@ -121,7 +140,7 @@ class RuleVerifier
     full = generator_output(*arguments, "--fragment")
     compact = generator_output(*arguments, "--compact", "--fragment")
     index = generator_output(*arguments, "--index", "--fragment")
-    selected = %w[delivery deployment version-control ai-guardrails programming]
+    selected = %w[requirements delivery deployment version-control ai-guardrails programming]
     missing_constraints = selected.flat_map do |key|
       doc = catalog.fetch("docs").find { |entry| entry.fetch("key") == key }
       source = File.read(File.join(ROOT, doc.fetch("file")), encoding: "UTF-8")
@@ -228,6 +247,9 @@ class RuleVerifier
   def verify_project_agent_generator
     Dir.mktmpdir("agentrules-project") do |dir|
       create_project_fixture(dir)
+      FileUtils.mkdir_p(File.join(dir, "docs", "requirements"))
+      File.binwrite(File.join(dir, "LESSONS.md"), "# 项目已有经验\r\n\r\n保留现有记录与行尾。\r\n")
+      File.write(File.join(dir, "docs", "requirements", "existing.md"), "# 已有需求\n\n保留目标、范围与验收记录。\n", encoding: "UTF-8")
       before = fixture_snapshot(dir)
       dry = project_generator_output(dir, "--profile", "delivery", "--dry-run",
         "--json-output", File.join(dir, "reports", "dry.json"), "--markdown-output", File.join(dir, "reports", "dry.md"))
@@ -244,14 +266,15 @@ class RuleVerifier
       package_manager_ok = web_agent.include?("`npm ci`") && web_agent.include?("`npm run test`")
       root_agent = File.read(File.join(dir, "AGENTS.md"), encoding: "UTF-8")
       profiles_ok = first.fetch("profiles") == %w[go-react-embed delivery python-api] && indexed_files(root_agent).include?("python.md")
-      index_ok = first.fetch("rules_mode") == "index" && root_agent.include?("/delivery.md") &&
+      index_ok = first.fetch("rules_mode") == "index" && root_agent.include?("/requirements.md") && root_agent.include?("/delivery.md") &&
         !root_agent.include?("## 硬约束") && !root_agent.include?("## 使用说明") && !root_agent.include?("## 始终遵守")
       after = fixture_snapshot(dir)
+      existing_preserved = before.all? { |path, bytes| after[path] == bytes }
       only_agents = (after.keys - before.keys).sort == generated_paths.sort
       second = project_generator_output(dir, "--rules-mode", "compact", "--profile", "delivery")
       preserved = after == fixture_snapshot(dir) && second.fetch("actions").all? { |action| action.fetch("status") == "skipped" }
-      passed = generated && parent_chain && package_manager_ok && profiles_ok && index_ok && only_agents && preserved && first.fetch("template") == "go-react-embed"
-      record("项目 AGENTS 脚手架", passed, passed ? "默认 index、自动技术模板、重复画像叠加、锁文件命令与 Parent 链通过；只生成 AGENTS，重复执行逐字节保留所有文件。" : "项目脚手架默认模式、画像、目录、命令、Parent 链或重复执行保护异常。")
+      passed = generated && parent_chain && package_manager_ok && profiles_ok && index_ok && existing_preserved && only_agents && preserved && first.fetch("template") == "go-react-embed"
+      record("项目 AGENTS 脚手架", passed, passed ? "默认 index、自动技术模板、画像叠加、锁文件命令与 Parent 链通过；仅新增缺失 AGENTS，首次生成与重复执行均逐字节保留已有需求、经验与规则记录。" : "项目脚手架默认模式、画像、目录、命令、Parent 链、首次生成保留或重复执行保护异常。")
     end
     verify_existing_nested_agent
   end
@@ -282,8 +305,8 @@ class RuleVerifier
         size = document_size(root)
         sizes << "#{template}+delivery #{size_label(size)}"
         instructions = root.split("## 按需规则索引", 2).first
-        required_loading = %w[ai-guardrails.md programming.md version-control.md].all? { |file| instructions.include?("`#{file}`") } &&
-          instructions.include?("修改代码前") && instructions.include?("读取")
+        required_loading = %w[ai-guardrails.md programming.md version-control.md requirements.md].all? { |file| instructions.include?("`#{file}`") } &&
+          instructions.include?("修改代码前") && instructions.include?("读取") && instructions.include?("验收")
         valid = root.include?("> **Template:** `#{template}`") && root.end_with?("#{fragment}\n") &&
           indexed_files(root).include?("delivery.md") && !root.include?("## 硬约束") &&
           !root.include?("## 始终遵守") && root.include?("不要求每轮全部读取") && required_loading
