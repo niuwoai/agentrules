@@ -30,6 +30,7 @@
 | [CHANGELOG.md](CHANGELOG.md) | 规则库变更记录 |
 | [PRODUCT_OVERVIEW.md](PRODUCT_OVERVIEW.md) | 规则库当前状态、适用范围和维护说明 |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | 规则库架构、文档边界和维护方式 |
+| [Magpie agent 开发方式研究](docs/research/magpie-agent-development-2026-11-19.md) | 文档与协作协议、自动化链路、交付统计及证据边界 |
 
 ## 工具脚本
 | 文件 | 内容 |

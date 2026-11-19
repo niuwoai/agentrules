@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- 新增 Magpie agent 开发方式研究报告，记录提交与发布统计、文档分工、协作协议、自动化实践及执行缺口，并在 README 添加入口。
+
 ## [0.28.33] - 2026-03-22
 
 ### Changed
