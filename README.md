@@ -9,7 +9,8 @@
 |------|------|
 | [ai-guardrails.md](ai-guardrails.md) | AI 协作红线：文件编辑方式、破坏性操作确认、共享分支保护、如实汇报、需求文本与产品文案边界、界面要求与实现行为分离、长文档索引化与上下文预算 |
 | [programming.md](programming.md) | 编程：代码风格、错误处理、测试、设计原则、安全、日志 |
-| [delivery.md](delivery.md) | 高频交付：任务与行为契约、worktree 所有权、分层验证、并发边界、事故反馈 |
+| [requirements.md](requirements.md) | 需求收集：来源与去重、澄清与范围、优先级、状态、验收追踪和变更控制 |
+| [delivery.md](delivery.md) | 高频交付：任务与行为契约、worktree 所有权、分层验证、并发边界、经验生成与反馈 |
 | [design.md](design.md) | 多端设计：新项目启动门禁、第一轮确认清单、启动文档模板、UI 体系、多端规范 |
 | [version-control.md](version-control.md) | 版本管理：分支策略、语义化版本、CHANGELOG、Product Overview、Architecture 文档、Git 工作流 |
 | [deployment.md](deployment.md) | 服务部署：发布检查、迁移、产物备份、健康检查、回滚、CI/CD |
@@ -39,7 +40,8 @@
 | [scripts/generate_claude_md.rb](scripts/generate_claude_md.rb) | 交互选择规则文档并生成 AI 协作规则；`--compact` 输出硬约束精简版，`--index` 输出不含主题正文的按需索引版 |
 | [scripts/generate_project_agents.rb](scripts/generate_project_agents.rb) | 扫描目标项目并生成分层 `AGENTS.md`：支持通用、React、Go API、Go + React 模板；已有文件一律跳过，不覆盖人工规则 |
 | [templates/agents/](templates/agents/) | 根目录与模块级 `AGENTS.md` 的可维护 ERB 模板 |
-| [templates/delivery/](templates/delivery/) | 可选任务、子系统、经验和发布契约模板，复用既有 Issue / PR / 文档即可 |
+| [templates/delivery/](templates/delivery/) | 可选需求、任务、子系统、经验和发布契约模板，复用既有 Issue / PR / 文档即可 |
+| [需求到经验示例](docs/examples/requirements-to-lessons.md) | 演示来源、澄清、范围、验收证据、变更与经验记录；虚构示例不作为验证证据 |
 | [tests/release_workflow_test.rb](tests/release_workflow_test.rb) | 隔离执行实际附件发布步骤，使用假的 gh 覆盖重试、内容冲突、部分上传和网络失败，不访问 GitHub |
 | [scripts/verify_rules.rb](scripts/verify_rules.rb) | 校验规则结构、必选规则、版本一致性、入口文档体量预算、生成产物和嵌套 AGENTS 上溯链，并集成测试项目脚手架的重复执行安全性；输出 JSON + Markdown 报告，加 `--no-report` 则只打印到 stdout 不落盘 |
 | [Rakefile](Rakefile) | 本地验证入口：`rake test`（也是默认任务）执行 `ruby scripts/verify_rules.rb --no-report`，报告只打印到 stdout，不生成 `tmp/` 报告、不改动工作区；校验失败时 rake 以非零退出码结束 |
@@ -63,6 +65,18 @@ ruby scripts/generate_claude_md.rb --all --index --output AGENTS.md --force
 索引版只保留使用说明、优先级和主题链接。AI 应按任务读取直接相关的源规则，不应在开工时批量加载整个规则库。
 需要生成离线目录内的相对链接时，增加 `--index-base .`。
 
+## 收集需求并形成经验反馈
+
+按 [requirements.md](requirements.md) 收集来源、归并同类、澄清关键缺口，明确范围与验收，再关联实施任务和真实验证证据。已有项目只补增量，已有记录和授权直接沿用；需求就绪、验收通过与发布授权分别处理。
+
+[交付规则](delivery.md#经验记录如何生成与更新) 说明何时生成或更新经验、放在哪里、如何归并和验证防线；不强制单个 `LESSONS.md`，不假定有自动生成工具。完整填写方式见 [需求到经验示例](docs/examples/requirements-to-lessons.md)。
+
+交付画像已包含需求主题；也可单独叠加需求规则：
+
+```bash
+ruby scripts/generate_claude_md.rb --profile generic --docs requirements --index --output AGENTS.md
+```
+
 ## 支持每天 30–50 次小步发版
 
 从 [delivery.md](delivery.md) 开始，为项目定义发布单元与 [发布契约](templates/delivery/release-contract.md)：开发、审查和打包可并行，版本统一分配，共享目标的切换有序且拒绝过期任务。具体版本、产物、部署与迁移要求分别由对应主题维护。
@@ -75,7 +89,7 @@ ruby scripts/generate_claude_md.rb --all --index --output AGENTS.md --force
 ruby scripts/generate_claude_md.rb --profile go-api --profile delivery --index --output AGENTS.md
 ```
 
-[四类模板](templates/delivery/README.md) 按需取用；简单任务写在现有 Issue / PR 即可，不强制每次交付新建文档。Magpie 的技术栈、固定产物数、复盘天数和业务规则不迁入通用要求。
+[五类模板](templates/delivery/README.md) 按需取用；简单任务写在现有 Issue / PR 即可，不强制每次交付新建文档。Magpie 的技术栈、固定产物数、复盘天数和业务规则不迁入通用要求。
 
 ## 为项目生成分层 AGENTS.md
 

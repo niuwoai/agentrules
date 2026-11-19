@@ -17,7 +17,7 @@
 - **URL 推导**：主题规则默认位于同一仓库 `main` 分支根目录，模式为 `https://github.com/niuwoai/agentrules/blob/main/<文件名>`；索引未列出的主题也仅在任务相关时读取。
 - **本地优先**：工作区已克隆 agentrules 或已 vendor 同名文件时优先读本地文件。
 - **优先级**：系统 / 开发者 / 用户指令 > 目标仓库内更具体的 `AGENTS.md` / `CLAUDE.md` > 本索引。
-- **按任务读取**：改代码先读 `ai-guardrails.md`、`programming.md`；提交或版本读 `version-control.md`；并行协作或交付读 `delivery.md`；发布读 `deployment.md`；UI 读 `design.md` / `frontend.md`。
+- **按任务读取**：改代码先读 `ai-guardrails.md`、`programming.md`；提交或版本读 `version-control.md`；需求收集、澄清或验收读 `requirements.md`；并行协作、交付或经验记录读 `delivery.md`；发布读 `deployment.md`；UI 读 `design.md` / `frontend.md`。
 - 不得输出或提交密钥、Token、凭据、个人隐私数据。
 
 ## 始终遵守（精简）
@@ -32,6 +32,7 @@
 
 **需求与界面**
 
+- 需求先明确来源、范围与验收，沿用已有确认；缺失授权不擅自补齐，见 `requirements.md`。
 - 不要把需求、验收、Prompt、实现参数当用户界面文案；实现行为由代码完成，界面少字、可点即懂。
 - 用户可见文案走 i18n；新项目先落启动文档再大规模编码；关键决策写仓库文档，不单靠聊天记录。
 
@@ -47,6 +48,7 @@
 ## 按需规则索引
 - [AI 协作红线](https://github.com/niuwoai/agentrules/blob/main/ai-guardrails.md)（`ai-guardrails.md`）：文件编辑方式、破坏性操作确认、需求文本与产品文案边界、界面要求与实现行为分离、共享分支保护和如实汇报
 - [编程通用规范](https://github.com/niuwoai/agentrules/blob/main/programming.md)（`programming.md`）：代码风格、错误处理、测试、版本控制、安全和日志
+- [需求收集与验收](https://github.com/niuwoai/agentrules/blob/main/requirements.md)（`requirements.md`）：需求来源、澄清与范围、优先级、状态流转、验收追踪和变更控制
 - [多端产品设计规范](https://github.com/niuwoai/agentrules/blob/main/design.md)（`design.md`）：新项目启动门禁、界面呈现与实现行为分离、UI 规范方向和多端规范
 - [前端规范](https://github.com/niuwoai/agentrules/blob/main/frontend.md)（`frontend.md`）：TypeScript、React、状态管理、CSS、性能、安全和测试
 - [Go 规范](https://github.com/niuwoai/agentrules/blob/main/go.md)（`go.md`）：Go 项目结构、错误处理、并发、DI、测试、性能和 Go + React embed

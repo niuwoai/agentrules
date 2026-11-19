@@ -35,6 +35,13 @@ DOCS = [
     tags: %w[common backend frontend app required]
   ),
   RuleDoc.new(
+    key: "requirements",
+    file: "requirements.md",
+    title: "需求收集与验收",
+    summary: "需求来源、澄清与范围、优先级、状态流转、验收追踪和变更控制",
+    tags: %w[common product requirements]
+  ),
+  RuleDoc.new(
     key: "design",
     file: "design.md",
     title: "多端产品设计规范",
@@ -152,7 +159,7 @@ PROFILES = {
   },
   "delivery" => {
     name: "高频交付与并行协作（可叠加）",
-    docs: %w[delivery deployment version-control]
+    docs: %w[requirements delivery deployment version-control]
   },
   "full" => {
     name: "完整规则集",
@@ -316,7 +323,7 @@ class RulesBundleBuilder
       - 本文件是面向 AI 编程助手的整合规则入口；背景与示例按任务需要读取源文档。
       - 指令优先级：系统 / 开发者 / 用户指令 > 目标仓库内更具体的 `AGENTS.md` / `CLAUDE.md` > 本入口。
       - 修改前核对项目阶段、本地规则、工作区状态和既有实现，保留其他任务的现场。
-      - 新项目启动与界面设计按 `programming.md` / `design.md` 执行；产品、架构和开发说明仅在任务相关时读取。
+      - 需求收集、澄清与验收按 `requirements.md`；新项目启动与界面设计按 `programming.md` / `design.md`；产品、架构和开发说明仅在任务相关时读取。
       - 代码变更记录独立变更片段；发布阶段统一分配版本、归并 CHANGELOG 并同步相关版本文档，见 `version-control.md`。
       - 提交不等于发布；tag、推送与部署按用户授权及项目发布策略执行。并行协作见 `delivery.md`，发布切换见 `deployment.md`。
       - 关键行为与决策更新所属仓库文档，不只保留在聊天记录；不得输出或提交密钥、Token、凭据、个人隐私数据。
@@ -335,7 +342,7 @@ class RulesBundleBuilder
         - **URL 推导**：主题规则默认位于同一仓库 `main` 分支根目录，模式为 `#{base}/<文件名>`；索引未列出的主题也仅在任务相关时读取。
         - **本地优先**：工作区已克隆 agentrules 或已 vendor 同名文件时优先读本地文件。
         - **优先级**：系统 / 开发者 / 用户指令 > 目标仓库内更具体的 `AGENTS.md` / `CLAUDE.md` > 本索引。
-        - **按任务读取**：改代码先读 `ai-guardrails.md`、`programming.md`；提交或版本读 `version-control.md`；并行协作或交付读 `delivery.md`；发布读 `deployment.md`；UI 读 `design.md` / `frontend.md`。
+        - **按任务读取**：改代码先读 `ai-guardrails.md`、`programming.md`；提交或版本读 `version-control.md`；需求收集、澄清或验收读 `requirements.md`；并行协作、交付或经验记录读 `delivery.md`；发布读 `deployment.md`；UI 读 `design.md` / `frontend.md`。
         - 不得输出或提交密钥、Token、凭据、个人隐私数据。
       MARKDOWN
     end
@@ -347,7 +354,7 @@ class RulesBundleBuilder
       - 指令优先级：系统 / 开发者 / 用户指令 > 目标仓库内更具体的 `AGENTS.md` / `CLAUDE.md` > 本索引。
       - 开工前只读取与任务直接相关的规则；任务范围扩大时再补读。
       - 修改前检查本地规则、工作区状态和既有实现，保留用户已有改动。
-      - 改代码先读 `ai-guardrails.md`、`programming.md`；提交或版本读 `version-control.md`；并行协作或交付读 `delivery.md`；发布读 `deployment.md`；UI 读 `design.md` / `frontend.md`。
+      - 改代码先读 `ai-guardrails.md`、`programming.md`；提交或版本读 `version-control.md`；需求收集、澄清或验收读 `requirements.md`；并行协作、交付或经验记录读 `delivery.md`；发布读 `deployment.md`；UI 读 `design.md` / `frontend.md`。
       - 不得输出或提交密钥、Token、凭据、个人隐私数据；疑似敏感信息先停止扩散并脱敏处理。
       - 本地存在 agentrules 或 vendor 规则时优先读取同名文件；否则按索引链接读取 GitHub 默认分支。
     MARKDOWN
@@ -374,6 +381,7 @@ class RulesBundleBuilder
 
       **需求与界面**
 
+      - 需求先明确来源、范围与验收，沿用已有确认；缺失授权不擅自补齐，见 `requirements.md`。
       - 不要把需求、验收、Prompt、实现参数当用户界面文案；实现行为由代码完成，界面少字、可点即懂。
       - 用户可见文案走 i18n；新项目先落启动文档再大规模编码；关键决策写仓库文档，不单靠聊天记录。
 
