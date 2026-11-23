@@ -1,12 +1,43 @@
 # Changelog
 
-## [0.28.34] - 2026-03-22
+## [0.30.36] - 2026-11-19
 
 ### Added
-- `generate_claude_md.rb` / `CLAUDE.md` / `GENERATED_CLAUDE.md`：「始终遵守」增补两条规则：文档与实现同步、develop 分支优先。
+- `deployment.md`：新增「CI 分级与跳过策略」小节，包含纯文档跳过代码 CI、按技术栈分模块 CI、变更路径匹配、共享依赖触发全量、GitHub Actions 示例。
+
+## [0.30.35] - 2026-11-19
+
+### Added
+- 新增可选 `requirements.md`：需求来源与归并、增量澄清、范围与优先级、状态转换、验收证据追踪和变更控制。
+- 新增需求模板与需求到经验的完整填写示例，关联需求修订、实施任务、验收结果和经验反馈；示例明确为虚构，不作为真实验证证据。
+
+### Changed
+- 交付画像包含需求主题，CLAUDE / AGENTS 的 full、compact、index 及项目脚手架入口说明读取时机；默认必选主题仍为三项。
+- 完善经验记录的触发、位置继承、生成或更新、归并、验证、规则晋升和失效处理，区分自动检查与人工审阅的实际执行证据；沿用现有记录，不强制单个 `LESSONS.md`，不新增自动采集或经验文件生成工具。
+- 更新任务与经验模板，补充需求入口、画像与别名、首次生成及重复执行逐字节保留已有记录的校验。
+- 归并 `changes/requirements-feedback.md`，同步产品与架构版本入口和能力说明；版本提升到 0.30.35，历史条目归档至 `docs/changelog/v0.28.md`。
+
+## [0.29.34] - 2026-11-19
+
+### Added
+- 新增 Magpie agent 开发方式研究报告，记录提交与发布统计、文档分工、协作协议、自动化实践及执行缺口，并在 README 添加入口。
+- 新增通用 `delivery.md` 与可叠加交付画像：独立工作区、任务 / 行为契约、分层验证、证据绑定和事故反馈，以每天 30–50 次小步发版为待实测的容量目标。
+- 新增任务、子系统参考、经验和发布契约四类可选模板；不自动给每个业务仓库新增整套文档。
+- 新增真实发布步骤的隔离回归，覆盖不可变附件校验、重试、半成品恢复和失败阻断。
+
+### Changed
+- 版本 / CHANGELOG 在发布阶段集中收口，开发分支使用独立变更片段；版本原子预留，失败可留空号，重试不重分配；独立发布单元使用唯一 tag 命名空间，提交不再等同发布授权。
+- 短分支 + 受保护主干为默认，已有分支流程可保留；同目标必要的重构与测试可一起交付，审查与门禁绑定实际候选。
+- 构建与独立目标可并行，同环境 / 渠道的切换须互斥并校验来源推进关系，不凭较大 BUILD 放行旧源码；回滚处理旧队列，验证具体 SHA、产物及实际交付阶段。
+- 迁移可在启动流程或受控 Job 执行，同数据库共享锁；兼容窗口覆盖仍运行及计划回滚的旧版本，按 expand / migrate / contract 推进。
+- 项目 AGENTS 默认按需索引，并明确必选规则的读取时机；支持附加画像与显式 compact，规则选择按解析后的主题去重，片段不再重复常驻包装。
+- 规则库附件发布改用草稿准备、逐文件内容核对与显式公开；同 tag 重试互斥，不覆盖已上传附件，不在该流程推进 Latest；CI 增加合并队列事件。
+- 同步规则摘要、生成产物和产品 / 架构入口；版本提升到 0.29.34。历史条目归档至 `docs/changelog/v0.28.md`。
 
 ### Verification
-- `rake test`：PASS
+- `rake test`：Ruby 3.2.4 与 macOS 系统 Ruby 2.6.10 均为 19 项检查全部通过；发布工作流隔离回归 7 个场景、40 条断言通过。
+- 全量 compact 为 258 行 / 12,761 字符，逐主题保留全部硬约束；四种 index 根模板叠加 delivery 均满足入口预算。
+- 规则库检查不代表业务发布吞吐已达标；尚未执行线上 Actions、实际发布或生产压测。
 
 ## [0.28.33] - 2026-03-22
 
@@ -18,46 +49,7 @@
 ### Verification
 - `rake test`：PASS
 
-## [0.28.32] - 2026-03-22
-
-### Changed
-- `version-control.md`：BUILD 第三段改为**裸整数**展示（如 `0.28.31`），禁止五位前导零补齐；示例、迁移说明与 tag 格式同步。
-- 规则库版本提升到 0.28.32。
-
-### Verification
-- `rake test`：PASS
-
-## [0.28.31] - 2026-03-22
-
-### Changed
-- `CLAUDE.md` **「始终遵守（精简）」** 增补：Schema 变更须有 `up`/`down` 迁移；业务仓库维护 README / CHANGELOG / PRODUCT_OVERVIEW / ARCHITECTURE。
-- 主 `CHANGELOG.md` 超出 300 行预算，将 `0.28.00028` 至 `0.1.0` 归档至 `docs/changelog/v0.27-and-earlier.md`。
-- 规则库版本提升到 0.28.31。
-
-### Verification
-- `rake test`：PASS
-
-## [0.28.30] - 2026-03-22
-
-### Changed
-- `CLAUDE.md` 在概要索引中新增 **「始终遵守（精简）」**：常驻协作/安全、需求与界面、工程底线；主题规则仍按需从 GitHub 加载。
-- 规则库版本提升到 0.28.30。
-
-### Verification
-- `rake test`：PASS
-
-## [0.28.29] - 2026-03-22
-
-### Changed
-- `CLAUDE.md` / `GENERATED_CLAUDE.md` 改为 **`--all --index` 概要索引**：标明规范地址 `https://github.com/niuwoai/agentrules/blob/main/CLAUDE.md`，主题规则链至 `niuwoai/agentrules` 默认分支，Agent 按任务推导并加载 `ai-guardrails.md` 等，不再内嵌硬约束正文以控制提示长度。
-- `scripts/generate_claude_md.rb`：默认仓库 URL 改为 niuwoai；为 `CLAUDE.md` 输出增强索引说明（URL 推导、本地优先）。
-- `scripts/verify_rules.rb`、`release-claude.yml`、`README.md` 与发布流程对齐索引版 CLAUDE。
-- 规则库版本提升到 0.28.29。
-
-### Verification
-- `rake test`：PASS
-
 ## 历史归档
 
+- [v0.28.29–0.28.32](docs/changelog/v0.28.md)
 - [v0.27 及更早版本](docs/changelog/v0.27-and-earlier.md)（含 0.28.00028 至 0.1.0）
-

@@ -10,7 +10,7 @@
 - **MUST**：接口定义在使用方 package，不在实现方定义再被 import
 - **MUST**：同结构多用例的测试用表驱动
 - **MUST**：`main` 只做依赖注入和启动，业务逻辑放 `internal/`
-- **MUST**：涉及迁移与部署时遵守 [database-migrations.md](database-migrations.md) 与 [deployment.md](deployment.md) 的硬约束（启动自动 up、失败停启动、多实例锁、部署前备份旧二进制）
+- **MUST**：涉及迁移与部署时遵守 [database-migrations.md](database-migrations.md) 与 [deployment.md](deployment.md) 的硬约束（承载新流量前必要迁移成功、同数据库共享锁、可追溯产物及回滚准备）
 - **MUST NOT**：panic 做流程控制；panic 只给不可恢复错误（配置缺失、启动失败）
 - **MUST NOT**：channel 读端执行 close；谁写谁 close
 - **MUST NOT**：用运行时反射的 DI 框架；要 DI 用构造函数参数或 wire
@@ -107,7 +107,7 @@ build:
 ```
 
 ### 迁移与启动
-迁移规则统一见 [database-migrations.md](database-migrations.md)（启动自动 up、失败即停止启动、`migrate up/down/status` CLI 子命令、多实例加锁、down 谨慎执行）。Go 项目的落点：迁移封装在 `internal/migrate/`，服务二进制通过子命令暴露迁移操作。
+迁移规则统一见 [database-migrations.md](database-migrations.md)（新流量前必要迁移成功、启动流程或受控 Job、同数据库共享锁、down 谨慎执行）。Go 项目可封装在 `internal/migrate/`，由服务二进制或独立迁移工具提供 `up/down/status` 操作，避免重复维护执行逻辑。
 
 ### 部署
 - `scp bin/server user@host:/opt/app/` 拷过去直接 `./server`

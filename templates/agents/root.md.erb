@@ -4,19 +4,22 @@
 # <%= project_name %> — Agent Instructions
 
 > **Scope:** 仓库根目录及全部子目录。
-> **Template:** `<%= template_name %>`；子目录 `AGENTS.md` 只补充局部规则，冲突时局部规则优先。
+> **Template:** `<%= template_name %>`；子目录 `AGENTS.md` 只补充局部规则；系统 / 开发者 / 用户指令优先于仓库规则，局部规则仅覆盖父级冲突条目。
 
 ## 项目上下文
 
-- 产品概览：优先阅读 `PRODUCT_OVERVIEW.md`；若它超出体量预算，按其中的文档入口表按需读取 `docs/` 子文档。
-- 技术架构：优先阅读 `ARCHITECTURE.md`。
-- 开发说明：优先阅读 `README.md` 和当前目录构建清单。
-- 持久规则写入仓库文档，不把聊天记录当作唯一事实来源。
+- 按任务读取已有入口：产品行为与范围查 `PRODUCT_OVERVIEW.md`，模块边界与数据流查 `ARCHITECTURE.md`，开发运行查 `README.md` 和当前目录构建清单。
+- 只沿相关入口补读需要的子文档；这些参考文档不要求每轮全部读取，缺失时先核对仓库实际结构。
+- 持久规则与行为契约更新所属仓库文档，不把聊天记录当作唯一事实来源。
 
 ## 常用命令
 
 <%= commands_markdown %>
 
 ## Willdeep 规则基线
+
+- 索引模式下，修改代码前先读取 `ai-guardrails.md`、`programming.md`；提交或处理版本时读取 `version-control.md`。
+- 需求收集、澄清与验收读 `requirements.md`；并行协作与经验记录读 `delivery.md`；发布、界面任务分别按需读取 `deployment.md`、`design.md` / `frontend.md`，不一次性加载全部主题。
+- 优先读本地 vendor 规则，否则使用下方链接；未列出的相关主题按同一链接根路径定位。compact 已嵌入所选硬约束，背景细则按需补读。
 
 <%= rules_fragment %>
