@@ -46,17 +46,13 @@
 - 业务代码仓库维护 README、CHANGELOG、产品与架构入口；规则库仓库不强制业务四文档门禁，以 README、CHANGELOG 与校验为准，见 `version-control.md`。
 
 ## 按需规则索引
-- [AI 协作红线](https://github.com/niuwoai/agentrules/blob/main/ai-guardrails.md)（`ai-guardrails.md`）：文件编辑方式、破坏性操作确认、需求文本与产品文案边界、界面要求与实现行为分离、共享分支保护和如实汇报
 - [编程通用规范](https://github.com/niuwoai/agentrules/blob/main/programming.md)（`programming.md`）：代码风格、错误处理、测试、版本控制、安全和日志
-- [需求收集与验收](https://github.com/niuwoai/agentrules/blob/main/requirements.md)（`requirements.md`）：需求来源、澄清与范围、优先级、状态流转、验收追踪和变更控制
 - [多端产品设计规范](https://github.com/niuwoai/agentrules/blob/main/design.md)（`design.md`）：新项目启动门禁、界面呈现与实现行为分离、UI 规范方向和多端规范
 - [前端规范](https://github.com/niuwoai/agentrules/blob/main/frontend.md)（`frontend.md`）：TypeScript、React、状态管理、CSS、性能、安全和测试
 - [Go 规范](https://github.com/niuwoai/agentrules/blob/main/go.md)（`go.md`）：Go 项目结构、错误处理、并发、DI、测试、性能和 Go + React embed
-- [Python 规范](https://github.com/niuwoai/agentrules/blob/main/python.md)（`python.md`）：Python 环境、类型、异步、数据库、测试和常用库
 - [数据库迁移规范](https://github.com/niuwoai/agentrules/blob/main/database-migrations.md)（`database-migrations.md`）：迁移版本、建表、索引、启动迁移、回滚和 CI/CD
 - [数据库查询规范](https://github.com/niuwoai/agentrules/blob/main/database-queries.md)（`database-queries.md`）：SQL 编写、索引、查询优化、EXPLAIN 和 ORM
-- [数据库同步规范](https://github.com/niuwoai/agentrules/blob/main/database-sync.md)（`database-sync.md`）：全量、增量、实时同步、一致性、冲突解决和监控
-- [高频交付与并行协作](https://github.com/niuwoai/agentrules/blob/main/delivery.md)（`delivery.md`）：任务与工作区所有权、行为契约、集成证据、分层验证和事故反馈
 - [服务部署规范](https://github.com/niuwoai/agentrules/blob/main/deployment.md)（`deployment.md`）：发布检查、迁移、产物备份、健康检查、回滚和 CI/CD
 - [Linux 服务器规范](https://github.com/niuwoai/agentrules/blob/main/linux-server.md)（`linux-server.md`）：安全基线、监控、备份、日志、性能调优、Docker 和应急响应
 - [版本管理规范](https://github.com/niuwoai/agentrules/blob/main/version-control.md)（`version-control.md`）：分支策略、语义化版本、Build 号、CHANGELOG、.gitignore 和 Git 工作流
+- [AI 协作红线](https://github.com/niuwoai/agentrules/blob/main/ai-guardrails.md)（`ai-guardrails.md`）：文件编辑方式、破坏性操作确认、需求文本与产品文案边界、界面要求与实现行为分离、共享分支保护和如实汇报
