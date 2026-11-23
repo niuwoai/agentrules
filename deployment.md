@@ -76,6 +76,72 @@
 - **按已有授权自动推进**：低风险发布可按项目已有策略自动执行，不为每次常规步骤重复询问；高风险变更、数据库破坏性变更、跨服务联动或超出原授权范围仍须人工确认。
 - **通知要有信息量**：包含实际完成阶段、目标、健康检查、备份 / 旧产物引用和回滚方法；不适用的迁移明确注明。
 
+### CI 分级与跳过策略
+
+CI 资源宝贵，按变更范围分级执行，避免全量流水线浪费：
+
+- **纯文档变更跳过代码 CI**：仅修改 `.md`、`.txt`、`.rst` 等文档文件时，跳过编译、测试、构建等代码相关 CI 阶段；可仅运行文档 lint 或链接检查。
+- **按技术栈分模块 CI**：多语言项目按模块拆分 CI job，变更路径与 job 绑定：
+  - 前端模块（`*.ts`、`*.tsx`、`*.js`、`*.jsx`、`*.html`、`*.css`、`*.scss`）→ 前端 CI（类型检查、lint、构建、前端测试）
+  - 后端模块（`*.go`、`*.rs`、`*.py`、`*.java` 等）→ 后端 CI（编译、lint、测试、构建）
+  - 基础设施模块（`*.tf`、`*.yaml`、`Dockerfile` 等）→ IaC CI（lint、plan、安全扫描）
+- **变更路径匹配规则**：CI 入口根据 git diff 的文件路径决定触发哪些 job；未触及的模块跳过对应 CI。例如：
+  - 仅改 `web/` 目录 → 只跑前端 CI
+  - 仅改 `api/` 目录 → 只跑后端 CI
+  - 改 `web/` 和 `api/` → 前端 + 后端 CI 并行
+- **共享依赖变更触发全量**：改动公共依赖（`go.mod`、`package.json`、`Cargo.toml`、共享工具脚本）或 CI 配置本身时，触发受影响的所有模块 CI。
+- **跳过规则显式声明**：在 CI 配置中用 `paths` / `paths-ignore` 或等价机制显式声明跳过条件，不要靠隐式约定。
+
+#### 示例：GitHub Actions 分级 CI
+
+```yaml
+# .github/workflows/frontend.yml
+on:
+  pull_request:
+    paths:
+      - 'web/**'
+      - 'package.json'
+      - 'package-lock.json'
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run build
+
+# .github/workflows/backend.yml
+on:
+  pull_request:
+    paths:
+      - 'api/**'
+      - 'go.mod'
+      - 'go.sum'
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+      - run: go test ./...
+      - run: go build ./...
+
+# .github/workflows/docs.yml
+on:
+  pull_request:
+    paths:
+      - '**.md'
+      - 'docs/**'
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm run lint:docs  # 可选：文档 lint
+```
+
 ## 并行发布与过期保护
 
 开发、审查、构建及无共享状态的发布目标可以并行。最终流量 / 渠道切换按 `(发布单元, 环境, 渠道)` 协调；多目标依赖共享数据库时，还需数据库自身的迁移锁，不能仅依赖各自 CI 的 concurrency 名称。
