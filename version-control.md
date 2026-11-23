@@ -45,7 +45,60 @@ feature/<功能名>      # feature/user-auth, feature/payment
 fix/<问题描述>        # fix/login-timeout, fix/typo
 release/<版本号>      # release/v1.2.7
 hotfix/<问题描述>     # hotfix/critical-bug
+pre_pr/<合并目标>     # pre_pr/sprint-23, pre_pr/week-12 (多分支合并缓冲)
 ```
+
+### pre_pr 合并缓冲层
+
+**目的**：控制仓库并发 PR 数量，提前暴露并解决冲突，减少主分支集成风险。
+
+**硬约束**：
+
+- **MUST**：整个仓库运行中的待合并 PR（open 状态）**不超过 2 个**
+- **MUST**：多个 feature/fix 分支合并到同一目标时，先合并到 `pre_pr/*` 分支，解决冲突后再从 `pre_pr/*` 提 PR 到目标分支
+- **MUST**：`pre_pr/*` 分支命名需体现合并目标或批次，如 `pre_pr/sprint-23`、`pre_pr/week-12`
+- **MUST**：在 `pre_pr/*` 中解决所有冲突后再创建 PR；冲突未解决不得提交 PR
+- **MUST NOT**：绕过 pre_pr 层直接从多个分支同时提 PR 到同一目标
+
+**流程**：
+
+1. 从目标分支（如 main）创建多个 feature 分支并行开发
+2. 开发完成后，由 coding agent **在本地**将相关 feature 分支合并到 `pre_pr/*` 分支（**不走 PR**）
+3. 在本地 `pre_pr/*` 中解决所有合并冲突
+4. 在本地运行测试验证集成结果
+5. 推送 `pre_pr/*` 到远程，从 `pre_pr/*` 提交 **一个** PR 到目标分支
+6. PR 合并后删除对应 `pre_pr/*` 分支
+
+**本地合并优势**：减少 GitHub runner 工作量，冲突解决和集成测试在本地完成，PR 只验证最终结果。
+
+**示例**：
+
+```bash
+# 创建 pre_pr 分支
+git checkout main
+git checkout -b pre_pr/sprint-23
+
+# 本地合并多个 feature 分支到 pre_pr（不走 PR）
+git merge feature/user-auth
+git merge feature/payment
+git merge fix/login-timeout
+
+# 本地解决冲突并测试
+# 解决冲突...
+rake test
+
+# 推送 pre_pr 分支
+git push origin pre_pr/sprint-23
+
+# 从 pre_pr/sprint-23 提交一个 PR 到 main
+# 仓库 PR 总数控制在 2 个以内
+```
+
+**并行控制**：
+
+- 同一时间最多 2 个 pre_pr 分支提 PR
+- 优先级高的 pre_pr 先合并
+- 低优先级的等待高优先级合并后再提 PR
 
 ## 版本号
 
